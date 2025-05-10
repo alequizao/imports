@@ -7,9 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { STORE_NAME } from '@/lib/constants';
-
-// GeistSans and GeistMono are already the font objects.
-// No need to call them as functions. Their 'variable' property can be accessed directly.
+import FloatingCartButton from '@/components/cart/FloatingCartButton'; // Added import
 
 export const metadata: Metadata = {
   title: {
@@ -48,8 +46,8 @@ export default function RootLayout({
         </main>
         <Footer />
         <Toaster />
+        <FloatingCartButton /> {/* Added FloatingCartButton */}
       </body>
     </html>
   );
 }
-

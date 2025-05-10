@@ -22,10 +22,14 @@ import {
   Sheet,
   SheetContent,
   SheetTrigger,
-  SheetClose
+  SheetClose,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
 } from "@/components/ui/sheet";
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { STORE_NAME } from '@/lib/constants';
 
 // Wrapper to conditionally apply SheetClose for mobile
 const MobileSheetCloseWrapper = ({ children, isMobile }: { children: ReactNode; isMobile: boolean }) => {
@@ -178,27 +182,30 @@ export default function Header() {
 
         {/* Mobile Navigation Trigger */}
         <div className="md:hidden">
-          <Sheet>
+          <Sheet> {/* This is the Dialog root */}
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80">
                 <Menu size={24} />
                 <span className="sr-only">Abrir menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] p-4">
-             <div className="flex items-center justify-between border-b pb-3 mb-3">
+            <SheetContent side="right" className="w-[280px] p-0"> {/* Adjusted padding */}
+              <SheetHeader className="flex flex-row items-center justify-between border-b p-4">
                 <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                     <Package size={28} />
                     <Logo className="h-7 w-auto" /> 
                 </Link>
+                <SheetTitle className="sr-only">{STORE_NAME} Menu</SheetTitle> 
+                <SheetDescription className="sr-only">Menu principal de navegação do site.</SheetDescription>
+                {/* SheetClose is already DialogClose equivalent */}
                 <SheetClose asChild>
                     <Button variant="ghost" size="icon">
                         <Menu size={24} /> {/* Or X icon when open */}
                         <span className="sr-only">Fechar menu</span>
                     </Button>
                 </SheetClose>
-              </div>
-              <nav className="flex flex-col gap-3">
+              </SheetHeader>
+              <nav className="flex flex-col gap-3 p-4"> {/* Added padding back here */}
                 {commonNavLinks(true)}
                 <MobileSheetCloseWrapper isMobile={true}>
                   <Link href="/wishlist" passHref>
@@ -240,3 +247,4 @@ export default function Header() {
     </header>
   );
 }
+

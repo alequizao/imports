@@ -7,8 +7,8 @@ import ProductCardSkeleton from './ProductCardSkeleton';
 import { useEffect, useState, useMemo } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Package2, Search } from 'lucide-react';
+// Removed Label import as it's no longer used for these controls
+import { Package2, Search, ListFilter, ArrowDownUp } from 'lucide-react'; // Added ListFilter, ArrowDownUp
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Product } from '@/lib/types';
 
@@ -69,7 +69,7 @@ export default function ProductList() {
       case "price-desc":
         tempProducts.sort((a, b) => b.price - a.price);
         break;
-      case "rating-desc": // Requires average rating calculation per product
+      case "rating-desc": 
         tempProducts.sort((a, b) => {
             const avgRatingA = a.reviews && a.reviews.length > 0 ? a.reviews.reduce((s, r) => s + r.rating, 0) / a.reviews.length : 0;
             const avgRatingB = b.reviews && b.reviews.length > 0 ? b.reviews.reduce((s, r) => s + r.rating, 0) / b.reviews.length : 0;
@@ -78,7 +78,6 @@ export default function ProductList() {
         break;
       case "default":
       default:
-        // Default sort could be by ID or keep as is (initial load order)
         break;
     }
 
@@ -88,16 +87,10 @@ export default function ProductList() {
   if (!mounted || !isInitialized) {
     return (
       <div>
-        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-            <Skeleton className="h-10 w-full rounded-md" /> {/* Search */}
-            <div className="w-full"> {/* Category Filter */}
-                <Skeleton className="h-4 w-20 mb-1 rounded" />
-                <Skeleton className="h-10 w-full rounded-md" />
-            </div>
-            <div className="w-full"> {/* Sort By */}
-                <Skeleton className="h-4 w-16 mb-1 rounded" />
-                <Skeleton className="h-10 w-full rounded-md" />
-            </div>
+        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-center">
+            <Skeleton className="h-10 w-full rounded-md" /> 
+            <Skeleton className="h-10 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-md" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {[...Array(8)].map((_, index) => (
@@ -114,27 +107,25 @@ export default function ProductList() {
         <h2 className="text-3xl font-bold text-primary text-center sm:text-left">Nosso Catálogo</h2>
       </div>
       
-      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-        <div className="w-full lg:col-span-1">
-            <Label htmlFor="search-filter" className="text-sm font-medium text-muted-foreground">Buscar Produto:</Label>
-            <div className="relative mt-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                    id="search-filter"
-                    type="search"
-                    placeholder="Nome, descrição, categoria..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                />
-            </div>
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-center"> {/* Changed items-end to items-center */}
+        <div className="relative w-full lg:col-span-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+            <Input
+                id="search-filter"
+                type="search"
+                placeholder="Buscar produtos..." // Updated placeholder
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+                aria-label="Buscar Produto"
+            />
         </div>
         {categories.length > 1 && (
             <div className="w-full">
-            <Label htmlFor="category-filter" className="text-sm font-medium text-muted-foreground">Filtrar por Categoria:</Label>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger id="category-filter" className="w-full mt-1">
-                <SelectValue placeholder="Selecione uma categoria" />
+                <SelectTrigger id="category-filter" className="w-full" aria-label="Filtrar por Categoria">
+                    <ListFilter className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
+                    <SelectValue placeholder="Filtrar por categoria" /> 
                 </SelectTrigger>
                 <SelectContent>
                 {categories.map(category => (
@@ -147,10 +138,10 @@ export default function ProductList() {
             </div>
         )}
          <div className="w-full">
-            <Label htmlFor="sort-filter" className="text-sm font-medium text-muted-foreground">Ordenar Por:</Label>
             <Select value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
-                <SelectTrigger id="sort-filter" className="w-full mt-1">
-                <SelectValue placeholder="Padrão" />
+                <SelectTrigger id="sort-filter" className="w-full" aria-label="Ordenar Por">
+                    <ArrowDownUp className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
+                    <SelectValue placeholder="Ordenar por" />
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem value="default">Padrão</SelectItem>

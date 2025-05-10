@@ -1,15 +1,16 @@
 // src/components/layout/Logo.tsx
 import type { SVGProps } from 'react';
+import { LOGO_LETTERS } from '@/lib/constants';
 
 export default function Logo(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 50 40" // ViewBox adjusted for "VS"
+      viewBox="0 0 50 40" // ViewBox adjusted for "VS" or similar short text
       width="50" // Default width, can be overridden
       height="40" // Default height, can be overridden
-      aria-label="VS Imports Logo" // Accessibility
-      {...props} // Spread remaining props like className, fill, etc.
+      aria-label={`${LOGO_LETTERS} Imports Logo`} 
+      {...props} 
     >
       <defs>
         <linearGradient id="vsLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -18,14 +19,15 @@ export default function Logo(props: SVGProps<SVGSVGElement>) {
         </linearGradient>
       </defs>
       <text
-        x="2" // Slightly offset for better visual centering
-        y="32" // Adjusted y for vertical alignment within 40px height viewbox for a 35px font
+        x="50%" // Center horizontally
+        y="32" 
         fontFamily="var(--font-geist-sans), sans-serif"
-        fontSize="35"
+        fontSize="30" // Adjusted font size for potentially variable letters
         fontWeight="bold"
         fill="url(#vsLogoGradient)"
+        textAnchor="middle" // Ensure text is centered
       >
-        VS
+        {LOGO_LETTERS}
       </text>
     </svg>
   );

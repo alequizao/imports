@@ -6,10 +6,10 @@ export default function HomePage() {
   return (
     <div className="space-y-8">
       <section className="text-center py-12 bg-gradient-to-r from-primary to-secondary rounded-lg shadow-xl">
-        <h1 className="text-4xl font-extrabold text-primary-foreground tracking-tight sm:text-5xl md:text-6xl">
+        <h1 className="text-3xl font-extrabold text-primary-foreground tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
           Bem-vindo à {STORE_NAME}!
         </h1>
-        <p className="mt-4 text-lg text-primary-foreground/90 max-w-2xl mx-auto">
+        <p className="mt-4 text-base text-primary-foreground/90 max-w-2xl mx-auto sm:text-lg md:text-xl">
           Sua vitrine exclusiva de produtos importados com qualidade e estilo.
         </p>
       </section>
@@ -20,3 +20,4 @@ export default function HomePage() {
     </div>
   );
 }
+

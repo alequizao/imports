@@ -6,7 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAdminAuthStore } from '@/store/adminAuthStore';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Package, LogOut, ShieldCheck, ShoppingBag, Menu } from 'lucide-react';
+import { Package, LogOut, ShieldCheck, ShoppingBag, Menu, LayoutDashboard } from 'lucide-react'; // Added LayoutDashboard
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -40,12 +40,12 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
   }
 
   const handleLogout = () => {
-    logout(); // This will set isAdminLoggedIn to false, triggering the useEffect above to redirect.
+    logout(); 
   };
 
   const navItems = [
+    { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/products', label: 'Produtos', icon: ShoppingBag },
-    // { href: '/admin/settings', label: 'Configurações', icon: Settings }, // Example for future expansion
   ];
 
   const SidebarNav = ({isMobile = false}: {isMobile?: boolean}) => (
@@ -56,6 +56,13 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
             variant={pathname.startsWith(item.href) ? "secondary" : "ghost"}
             className="w-full justify-start"
             aria-current={pathname.startsWith(item.href) ? "page" : undefined}
+            onClick={() => {
+              // Close sheet on mobile after navigation
+              if (isMobile) {
+                const trigger = document.querySelector('[data-radix-sheet-trigger]');
+                if (trigger instanceof HTMLElement) trigger.click();
+              }
+            }}
           >
             <item.icon className="mr-2 h-5 w-5" /> {item.label}
           </Button>
@@ -70,7 +77,7 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
       <aside className="hidden border-r bg-background md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-            <Link href="/admin/products" className="flex items-center gap-2 font-semibold text-primary">
+            <Link href="/admin/dashboard" className="flex items-center gap-2 font-semibold text-primary">
               <ShieldCheck className="h-6 w-6" />
               <span className="">Painel Admin</span>
             </Link>
@@ -88,7 +95,7 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
       <div className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30 md:hidden">
           <Sheet>
-            <SheetTrigger asChild>
+            <SheetTrigger asChild data-radix-sheet-trigger>
               <Button variant="outline" size="icon" className="shrink-0">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Abrir menu de navegação</span>
@@ -96,15 +103,12 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0">
               <SheetHeader className="flex h-14 flex-row items-center border-b px-4 py-0 space-y-0 lg:h-[60px] lg:px-6">
-                <Link href="/admin/products" className="flex items-center gap-2 font-semibold text-primary">
-                  <ShieldCheck className="h-6 w-6" />
-                  {/* SheetTitle now wraps the text content directly for accessibility */}
-                  <SheetTitle className="text-lg"> {/* Inherits font-weight and color from Link */}
+                {/* Use a div for the title in SheetHeader if SheetTitle itself is not desired or causes nesting issues */}
+                <div className="text-lg font-semibold text-primary flex items-center gap-2">
+                    <ShieldCheck className="h-6 w-6" />
                     Painel Admin
-                  </SheetTitle>
-                </Link>
-                 {/* Add a SheetDescription for accessibility if needed, or ensure title is descriptive enough */}
-                 {/* <SheetDescription className="sr-only">Admin navigation menu</SheetDescription> */}
+                </div>
+                 <SheetDescription className="sr-only">Admin navigation menu</SheetDescription>
               </SheetHeader>
               <ScrollArea className="flex-1">
                 <SidebarNav isMobile={true}/>

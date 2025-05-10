@@ -14,10 +14,11 @@ export default function HomePage() {
         </p>
       </section>
       
-      <Separator />
+      {/* Separator might be optional if ProductList has its own top margin/padding */}
+      {/* <Separator /> */}
 
-      <section>
-        <h2 className="text-3xl font-bold text-primary mb-6 text-center">Nosso Catálogo</h2>
+      <section className="mt-8"> 
+        {/* Title is now inside ProductList for better context with filters */}
         <ProductList />
       </section>
     </div>

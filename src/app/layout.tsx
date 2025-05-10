@@ -1,9 +1,11 @@
+
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import ChatWidget from '@/components/chat/ChatWidget'; // Added ChatWidget
 import { STORE_NAME } from '@/lib/constants';
 
 const geistSans = Geist({
@@ -17,8 +19,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: `${STORE_NAME} - Produtos Importados`,
-  description: `Encontre os melhores produtos importados na ${STORE_NAME}. Qualidade e exclusividade para você.`,
+  title: `${STORE_NAME} - Produtos Importados de Qualidade`,
+  description: `Encontre os melhores produtos importados na ${STORE_NAME}. Qualidade, exclusividade e os melhores preços para você.`,
+  keywords: "produtos importados, loja online, eletrônicos, perfumes, acessórios, moda, VS Imports Brasil",
+  openGraph: {
+    title: `${STORE_NAME} - Produtos Importados de Qualidade`,
+    description: `Descubra uma seleção exclusiva de produtos importados na ${STORE_NAME}.`,
+    type: 'website',
+    locale: 'pt_BR',
+    siteName: STORE_NAME,
+    // images: [ { url: '/og-image.png' } ], // Add an OG image URL if you have one
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${STORE_NAME} - Produtos Importados`,
+    description: `Qualidade e exclusividade em produtos importados é na ${STORE_NAME}.`,
+    // images: ['/twitter-image.png'], // Add a Twitter image URL if you have one
+  },
 };
 
 export default function RootLayout({
@@ -35,6 +52,7 @@ export default function RootLayout({
         </main>
         <Footer />
         <Toaster />
+        <ChatWidget /> {/* Added ChatWidget here */}
       </body>
     </html>
   );

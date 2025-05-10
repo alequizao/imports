@@ -1,9 +1,8 @@
 import type { Product } from '@/lib/types';
 
-// Estes são dados iniciais que podem ser usados para popular um banco de dados.
-// Em uma aplicação com banco de dados, esta lista seria carregada no banco
-// e não usada diretamente pelo frontend ou store após a inicialização.
-export const initialSeedProducts: Product[] = [
+// These are initial seed products for reference or manual seeding if needed.
+// The application's product store will initialize empty if no data is found in localStorage.
+export const referenceSeedProducts: Product[] = [
   {
     id: '1',
     name: 'Perfume Importado Alpha',
@@ -14,6 +13,11 @@ export const initialSeedProducts: Product[] = [
     color: 'Transparente',
     size: '100ml',
     model: 'Alpha Pour Homme',
+    stock: 15,
+    reviews: [
+      { id: 'rev1_1', author: 'Carlos M.', rating: 5, comment: 'Excelente! Fixação duradoura e aroma sofisticado.', date: new Date(Date.now() - 86400000 * 5).toISOString() },
+      { id: 'rev1_2', author: 'Beatriz L.', rating: 4, comment: 'Muito bom, mas um pouco forte para o meu gosto pessoal.', date: new Date(Date.now() - 86400000 * 2).toISOString() },
+    ],
   },
   {
     id: '2',
@@ -25,6 +29,8 @@ export const initialSeedProducts: Product[] = [
     color: 'Preto/Branco',
     size: '42 BR',
     model: 'BoostX Runner',
+    stock: 8,
+    reviews: [],
   },
   {
     id: '3',
@@ -36,6 +42,10 @@ export const initialSeedProducts: Product[] = [
     color: 'Prata com pulseira Marrom',
     size: 'Único',
     model: 'Elegance Timepiece',
+    stock: 12,
+    reviews: [
+      { id: 'rev3_1', author: 'Fernanda S.', rating: 5, comment: 'Lindo e elegante, superou minhas expectativas!', date: new Date(Date.now() - 86400000 * 10).toISOString() },
+    ],
   },
   {
     id: '4',
@@ -47,6 +57,8 @@ export const initialSeedProducts: Product[] = [
     color: 'Preto Fosco',
     size: 'Ajustável',
     model: 'ProSound Elite',
+    stock: 0, // Out of stock example
+    reviews: [],
   },
   {
     id: '5',
@@ -58,6 +70,8 @@ export const initialSeedProducts: Product[] = [
     color: 'Caramelo',
     size: 'Média',
     model: 'Lux Tote',
+    stock: 7,
+    reviews: [],
   },
   {
     id: '6',
@@ -69,6 +83,8 @@ export const initialSeedProducts: Product[] = [
     color: 'Dourado com lentes Verdes',
     size: 'Único',
     model: 'Prime Aviators',
+    stock: 20,
+    reviews: [],
   },
 ];
 

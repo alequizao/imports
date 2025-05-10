@@ -1,3 +1,4 @@
+
 "use client";
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -36,6 +37,10 @@ const productFormSchema = z.object({
   color: z.string().optional(),
   size: z.string().optional(),
   model: z.string().optional(),
+  stock: z.preprocess(
+    (val) => parseInt(String(val), 10),
+    z.number({invalid_type_error: "Estoque deve ser um número."}).int().min(0, "Estoque não pode ser negativo.")
+  ),
 });
 
 export type ProductFormData = z.infer<typeof productFormSchema>;
@@ -55,7 +60,8 @@ export default function ProductForm({ product }: ProductFormProps) {
     defaultValues: product ? {
       ...product,
       price: product.price,
-      image: product.image || '', 
+      image: product.image || '',
+      stock: product.stock || 0,
     } : {
       name: '',
       description: '',
@@ -65,6 +71,7 @@ export default function ProductForm({ product }: ProductFormProps) {
       color: '',
       size: '',
       model: '',
+      stock: 0,
     },
   });
 
@@ -84,13 +91,13 @@ export default function ProductForm({ product }: ProductFormProps) {
     if (file) {
       if (!file.type.startsWith('image/')) {
         toast({ title: "Arquivo Inválido", description: "Por favor, selecione um arquivo de imagem (ex: JPG, PNG, WEBP).", variant: "destructive" });
-        event.target.value = ''; // Clear the file input
+        event.target.value = ''; 
         return;
       }
       const maxSize = 5 * 1024 * 1024; // 5MB
       if (file.size > maxSize) {
         toast({ title: "Arquivo Muito Grande", description: `O tamanho máximo da imagem é ${maxSize / (1024 * 1024)}MB.`, variant: "destructive" });
-        event.target.value = ''; // Clear the file input
+        event.target.value = ''; 
         return;
       }
 
@@ -101,7 +108,6 @@ export default function ProductForm({ product }: ProductFormProps) {
       };
       reader.readAsDataURL(file);
     } else {
-      // File deselected
       setValue('image', product?.image || '', { shouldValidate: true, shouldDirty: true });
     }
   };
@@ -111,13 +117,16 @@ export default function ProductForm({ product }: ProductFormProps) {
       const productDataForStore = {
         ...data,
         price: Number(data.price),
+        stock: Number(data.stock),
       };
 
       if (product) {
-        updateProduct(product.id, productDataForStore as Partial<Omit<Product, 'id'>>);
+        // Ensure reviews are preserved if not part of form data
+        const existingReviews = product.reviews || [];
+        updateProduct(product.id, { ...productDataForStore, reviews: existingReviews } as Partial<Omit<Product, 'id'>>);
         toast({ title: "Produto Atualizado", description: `${data.name} foi atualizado com sucesso.` });
       } else {
-        addProduct(productDataForStore as Omit<Product, 'id'>);
+        addProduct(productDataForStore as Omit<Product, 'id' | 'reviews'>);
         toast({ title: "Produto Adicionado", description: `${data.name} foi adicionado com sucesso.` });
       }
       router.push('/admin/products');
@@ -147,8 +156,8 @@ export default function ProductForm({ product }: ProductFormProps) {
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-1.5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2 space-y-1.5">
               <Label htmlFor="name">Nome do Produto</Label>
               <Input id="name" {...register('name')} placeholder="Ex: Camisa Polo Elegante" />
               {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
@@ -162,7 +171,7 @@ export default function ProductForm({ product }: ProductFormProps) {
 
           <div className="space-y-1.5">
             <Label htmlFor="description">Descrição</Label>
-            <Textarea id="description" {...register('description')} rows={4} placeholder="Detalhes sobre o produto..." />
+            <Textarea id="description" {...register('description')} rows={3} placeholder="Detalhes sobre o produto..." />
             {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
           </div>
           
@@ -217,12 +226,19 @@ export default function ProductForm({ product }: ProductFormProps) {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">
               <Label htmlFor="category">Categoria</Label>
               <Input id="category" {...register('category')} placeholder="Ex: Roupas" />
               {errors.category && <p className="text-sm text-destructive">{errors.category.message}</p>}
             </div>
+             <div className="space-y-1.5">
+              <Label htmlFor="stock">Estoque</Label>
+              <Input id="stock" type="number" {...register('stock')} placeholder="Ex: 10" />
+              {errors.stock && <p className="text-sm text-destructive">{errors.stock.message}</p>}
+            </div>
+          </div>
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-1.5">
               <Label htmlFor="color">Cor</Label>
               <Input id="color" {...register('color')} placeholder="Ex: Azul Marinho" />
@@ -233,12 +249,12 @@ export default function ProductForm({ product }: ProductFormProps) {
               <Input id="size" {...register('size')} placeholder="Ex: M, 40, Único" />
               {errors.size && <p className="text-sm text-destructive">{errors.size.message}</p>}
             </div>
-          </div>
-           <div className="space-y-1.5">
+             <div className="space-y-1.5">
               <Label htmlFor="model">Modelo</Label>
               <Input id="model" {...register('model')} placeholder="Ex: Slim Fit, V2.0" />
               {errors.model && <p className="text-sm text-destructive">{errors.model.message}</p>}
             </div>
+          </div>
         </CardContent>
         <CardFooter>
           <Button type="submit" className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90" disabled={isSubmitting}>

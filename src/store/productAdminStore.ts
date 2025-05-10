@@ -1,21 +1,23 @@
+
 "use client";
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Product } from '@/lib/types';
+import type { Product, Review } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
-import { initialSeedProducts } from '@/data/products'; // Ensure this is imported
+// referenceSeedProducts is not used for initialization anymore, store starts empty if no localStorage.
+// import { referenceSeedProducts } from '@/data/products'; 
 
 interface ProductAdminState {
   products: Product[];
-  addProduct: (productData: Omit<Product, 'id'>) => void;
+  addProduct: (productData: Omit<Product, 'id' | 'reviews'>) => void;
   updateProduct: (productId: string, productData: Partial<Omit<Product, 'id'>>) => void;
   deleteProduct: (productId: string) => void;
   getProductById: (productId: string) => Product | undefined;
   setProducts: (products: Product[]) => void;
+  addReviewToProduct: (productId: string, reviewData: Omit<Review, 'id' | 'date'>) => void;
+  isInitialized: boolean; 
 }
 
-// Helper to ensure product objects have all necessary fields,
-// especially when rehydrating from localStorage or creating new products.
 const ensureProductFields = (product: any, existingId?: string): Product => {
   const id = existingId || product.id || uuidv4();
   return {
@@ -23,24 +25,35 @@ const ensureProductFields = (product: any, existingId?: string): Product => {
     name: product.name || '',
     description: product.description || '',
     price: typeof product.price === 'number' && !isNaN(product.price) ? product.price : 0,
-    image: product.image || `https://picsum.photos/seed/${id}/400/300`, // Fallback image using the determined id
+    image: product.image || `https://picsum.photos/seed/${id}/400/300`,
     category: product.category || '',
     color: product.color || '',
     size: product.size || '',
     model: product.model || '',
+    stock: typeof product.stock === 'number' && !isNaN(product.stock) ? product.stock : 0,
+    reviews: Array.isArray(product.reviews) ? product.reviews.map((r: any) => ({
+      id: r.id || uuidv4(),
+      author: r.author || 'Anônimo',
+      rating: typeof r.rating === 'number' ? Math.max(1, Math.min(5, r.rating)) : 3,
+      comment: r.comment || '',
+      date: r.date || new Date().toISOString(),
+    })) : [],
   };
 };
 
 export const useProductAdminStore = create(
   persist<ProductAdminState>(
     (set, get) => ({
-      // Initialize with initialSeedProducts.
-      // If localStorage 'vsimports-product-storage' exists & is valid, it will override this initial state.
-      // If localStorage is empty, doesn't have the key, or is invalid, this initial state is used.
-      products: initialSeedProducts.map(p => ensureProductFields(p)), // Ensure seed products are also well-formed
+      products: [], // Initialize with an empty array. Persisted data will override this.
+      isInitialized: false, // Will be set to true after rehydration
 
       addProduct: (productData) => {
-        const newProduct: Product = ensureProductFields(productData);
+        const newProductWithDefaults: Omit<Product, 'id'> = {
+          ...productData,
+          stock: productData.stock ?? 0,
+          reviews: [], // New products start with no reviews
+        };
+        const newProduct: Product = ensureProductFields(newProductWithDefaults);
         set((state) => ({ products: [...state.products, newProduct] }));
       },
       updateProduct: (productId, productData) => {
@@ -56,46 +69,55 @@ export const useProductAdminStore = create(
         }));
       },
       getProductById: (productId) => {
-        // Assumes products in the store are already well-formed by add/update/setProducts/hydration logic
         return get().products.find((p) => p.id === productId);
       },
       setProducts: (newProducts) => {
         set({ products: newProducts.map(p => ensureProductFields(p)) });
+      },
+      addReviewToProduct: (productId, reviewData) => {
+        set((state) => ({
+          products: state.products.map((p) =>
+            p.id === productId
+              ? {
+                  ...p,
+                  reviews: [
+                    ...(p.reviews || []),
+                    { ...reviewData, id: uuidv4(), date: new Date().toISOString() },
+                  ],
+                }
+              : p
+          ),
+        }));
       }
     }),
     {
       name: 'vsimports-product-storage',
       storage: createJSONStorage(() => localStorage),
-      // This partializer runs BEFORE saving to localStorage.
-      // It ensures that what's saved is well-formed.
       partialize: (state) => ({
-        products: state.products.map(p => ensureProductFields(p))
+        products: state.products.map(p => ensureProductFields(p)) 
       }),
-      // This runs AFTER loading from localStorage and BEFORE the store is updated with hydrated state.
       onRehydrateStorage: () => (hydratedState, error) => {
         if (error) {
-          console.error("ProductAdminStore: Error during rehydration. Store will use initial seed if hydration failed completely.", error);
-          // No need to explicitly set to initialSeedProducts here, 
-          // `persist` middleware handles fallback to the initial state defined in `create()` if `hydratedState` is null.
-          // If `hydratedState` is partially corrupted, we might need to handle it.
-          // Forcing re-initialization if products array is not as expected after potential error:
-          if (hydratedState && !Array.isArray(hydratedState.products)) {
-             hydratedState.products = initialSeedProducts.map(p => ensureProductFields(p));
-          }
+          console.error("ProductAdminStore: Error during rehydration. Store will use initial empty state if hydration failed.", error);
+          // Let persist middleware handle falling back to initial state (empty array)
+          useProductAdminStore.setState({ isInitialized: true });
           return;
         }
 
         if (hydratedState?.products && Array.isArray(hydratedState.products)) {
-          // If products were successfully loaded from localStorage, ensure they are well-formed.
           hydratedState.products = hydratedState.products.map(p => ensureProductFields(p));
         } else if (hydratedState) {
-          // If hydratedState is an object, but 'products' is not an array (e.g. old format, corruption)
-          // Set it to initial seed products.
-          hydratedState.products = initialSeedProducts.map(p => ensureProductFields(p));
+          // If localStorage had something but not a valid products array, start fresh
+          hydratedState.products = [];
         }
-        // If hydratedState is null (nothing in localStorage or key removed),
-        // the initial state `products: initialSeedProducts.map(...)` defined in create() will be used by `persist`.
+        // If hydratedState is null (e.g. first time user), it will use the initial value (empty array)
+        useProductAdminStore.setState({ isInitialized: true });
       }
     }
   )
 );
+
+// Trigger rehydration check (only on client)
+if (typeof window !== 'undefined') {
+  useProductAdminStore.getState(); 
+}

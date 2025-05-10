@@ -1,13 +1,17 @@
+
 import { STORE_NAME } from '@/lib/constants';
 import { Instagram, Mail } from 'lucide-react';
+import NewsletterForm from './NewsletterForm'; // Import NewsletterForm
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   return (
     <footer className="bg-muted text-muted-foreground py-8 text-center">
       <div className="container mx-auto px-4">
-        <p>&copy; {currentYear} {STORE_NAME}. Todos os direitos reservados.</p>
-        <div className="mt-6 flex justify-center items-center space-x-6">
+        
+        <NewsletterForm /> {/* Add NewsletterForm here */}
+
+        <div className="mt-10 flex justify-center items-center space-x-6">
           <a
             href="https://instagram.com/vsimports_ofc"
             target="_blank"
@@ -44,6 +48,7 @@ export default function Footer() {
             <Mail size={28} />
           </a>
         </div>
+        <p className="mt-8 text-xs">&copy; {currentYear} {STORE_NAME}. Todos os direitos reservados.</p>
       </div>
     </footer>
   );

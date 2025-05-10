@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShoppingCart, AlertTriangle, Send, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { formatPrice } from '@/data/products';
+import { formatPrice } from '@/lib/utils'; // Updated import
 import { WHATSAPP_NUMBER, STORE_NAME } from '@/lib/constants';
-import { useToast } from "@/hooks/use-toast"; // Changed: Import useToast hook
+import { useToast } from "@/hooks/use-toast"; 
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -20,7 +20,8 @@ export default function CartView() {
   const clearCart = useCartStore((state) => state.clearCart);
   
   const productsFromAdminStore = useProductAdminStore((state) => state.products);
-  const { toast } = useToast(); // Changed: Get toast function from the hook
+  const isProductStoreInitialized = useProductAdminStore((state) => state.isInitialized);
+  const { toast } = useToast(); 
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function CartView() {
   }, []);
 
   useEffect(() => {
-    if (!mounted || !productsFromAdminStore || !cartItemsFromStore) return;
+    if (!mounted || !isProductStoreInitialized || !productsFromAdminStore || !cartItemsFromStore) return;
 
     const itemsToRemove: { id: string, name: string }[] = [];
     const currentCartItems = useCartStore.getState().items;
@@ -46,14 +47,14 @@ export default function CartView() {
         useCartStore.getState().removeItem(item.id, { suppressToast: true });
       });
 
-      toast({ // Changed: Use toast function from hook
+      toast({ 
         title: "Itens Atualizados no Carrinho",
         description: `Os seguintes produtos não estão mais disponíveis e foram removidos: ${removedProductNames.join(', ')}.`,
         variant: "destructive",
         duration: 7000,
       });
     }
-  }, [mounted, productsFromAdminStore, cartItemsFromStore, toast]); // Changed: Added toast to dependency array
+  }, [mounted, isProductStoreInitialized, productsFromAdminStore, cartItemsFromStore, toast]); 
 
 
   const itemsForDisplay = cartItemsFromStore; 
@@ -61,7 +62,7 @@ export default function CartView() {
 
   const handleWhatsAppCheckout = () => {
     if (itemsForDisplay.length === 0) {
-      toast({ // Changed: Use toast function from hook
+      toast({ 
         title: "Carrinho Vazio",
         description: "Adicione produtos ao carrinho antes de finalizar a compra.",
         variant: "destructive",
@@ -83,7 +84,7 @@ export default function CartView() {
     window.open(whatsappUrl, '_blank');
   };
 
-  if (!mounted) {
+  if (!mounted || !isProductStoreInitialized) { // Also check product store initialization
     return (
       <Card className="w-full max-w-3xl mx-auto shadow-xl">
         <CardHeader>

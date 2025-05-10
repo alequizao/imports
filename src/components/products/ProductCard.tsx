@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShoppingCartIcon } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
-import { formatPrice } from '@/data/products';
+import { formatPrice } from '@/lib/utils'; // Updated import
 import Link from 'next/link'; 
 import { useToast } from '@/hooks/use-toast';
 

@@ -4,7 +4,7 @@
 import { useProductAdminStore } from '@/store/productAdminStore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { DollarSign, Package, Archive, AlertCircle, TrendingUp, Users } from 'lucide-react';
-import { formatPrice } from '@/data/products';
+import { formatPrice } from '@/lib/utils'; // Updated import
 import { useEffect, useState, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';

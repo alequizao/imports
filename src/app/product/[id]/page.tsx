@@ -11,7 +11,7 @@ import { useWishlistStore } from '@/store/wishlistStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatPrice } from '@/data/products';
+import { formatPrice } from '@/lib/utils'; // Updated import
 import { ArrowLeft, ShoppingCartIcon, AlertTriangle, Star, Heart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';

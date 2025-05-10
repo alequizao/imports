@@ -1,3 +1,4 @@
+
 "use client"
 
 // Inspired by react-hot-toast library
@@ -142,6 +143,14 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
+// Define ToastSignature type
+export type ToastSignature = (props: Toast) => {
+  id: string;
+  dismiss: () => void;
+  update: (props: ToasterToast) => void;
+};
+
+
 function toast({ ...props }: Toast) {
   const id = genId()
 
@@ -190,5 +199,6 @@ function useToast() {
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   }
 }
+
 
 export { useToast, toast }

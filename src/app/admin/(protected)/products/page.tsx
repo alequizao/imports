@@ -6,8 +6,8 @@ import { useProductAdminStore } from '@/store/productAdminStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Edit, Trash2, Search, Eye, Package2 } from 'lucide-react';
-import { formatPrice } from '@/data/products';
+import { PlusCircle, Edit, Trash2, Search, Eye, Package2, ShoppingBag } from 'lucide-react';
+import { formatPrice } from '@/lib/utils'; // Updated import
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -26,9 +26,10 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminProductsPage() {
-  const { products: allProducts, deleteProduct } = useProductAdminStore((state) => ({
+  const { products: allProducts, deleteProduct, isInitialized } = useProductAdminStore((state) => ({
     products: state.products,
     deleteProduct: state.deleteProduct,
+    isInitialized: state.isInitialized,
   }));
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,7 +41,7 @@ export default function AdminProductsPage() {
   }, []);
 
   const filteredProducts = useMemo(() => {
-    if (!mounted) return [];
+    if (!mounted || !isInitialized) return []; // Check isInitialized
     return allProducts.filter(product =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -49,7 +50,7 @@ export default function AdminProductsPage() {
       (product.color && product.color.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (product.size && product.size.toLowerCase().includes(searchTerm.toLowerCase()))
     ).sort((a, b) => a.name.localeCompare(b.name)); 
-  }, [allProducts, searchTerm, mounted]);
+  }, [allProducts, searchTerm, mounted, isInitialized]); // Add isInitialized
 
   const handleDeleteProduct = (productId: string, productName: string) => {
     deleteProduct(productId);
@@ -59,7 +60,7 @@ export default function AdminProductsPage() {
     });
   };
 
-  if (!mounted) {
+  if (!mounted || !isInitialized) { // Check isInitialized for loading state
     return (
       <Card className="shadow-lg w-full">
         <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -144,7 +145,7 @@ export default function AdminProductsPage() {
         </div>
         {filteredProducts.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground border border-dashed rounded-lg">
-            <Package2 size={48} className="mx-auto mb-4 text-primary/50" />
+            <ShoppingBag size={48} className="mx-auto mb-4 text-primary/50" />
             <p className="text-xl font-semibold">Nenhum produto encontrado.</p>
             {searchTerm && <p className="mt-2">Tente um termo de busca diferente ou limpe a busca.</p>}
             {!searchTerm && <p className="mt-2">Clique em "Adicionar Novo Produto" para começar a cadastrar.</p>}

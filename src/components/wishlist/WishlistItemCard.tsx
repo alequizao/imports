@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ShoppingCartIcon, Trash2 } from 'lucide-react';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useCartStore } from '@/store/cartStore';
-import { formatPrice } from '@/data/products';
+import { formatPrice } from '@/lib/utils'; // Updated import
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 

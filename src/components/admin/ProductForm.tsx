@@ -12,10 +12,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Save, UploadCloud } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import ProductFormImageUpload from './ProductFormImageUpload'; // Import the new component
 
 const productFormSchema = z.object({
   name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres."),
@@ -29,8 +29,8 @@ const productFormSchema = z.object({
     z.number({invalid_type_error: "Preço deve ser um número."}).positive("Preço deve ser um número positivo.")
   ),
   image: z.string()
-    .min(1, "A imagem do produto é obrigatória. Faça o upload de um arquivo.")
-    .refine(value => value.startsWith('data:image/') || value.startsWith('http://') || value.startsWith('https://'), {
+    .min(1, "A imagem do produto é obrigatória.") // Keep min(1) or refine based on how you handle empty string for "no image"
+    .refine(value => value === '' || value.startsWith('data:image/') || value.startsWith('http://') || value.startsWith('https://'), { // Allow empty string
        message: "Formato de imagem inválido. Faça upload ou forneça uma URL válida.",
     }),
   category: z.string().optional(),
@@ -82,35 +82,10 @@ export default function ProductForm({ product }: ProductFormProps) {
     if (currentImageFieldValue && (currentImageFieldValue.startsWith('data:image/') || currentImageFieldValue.startsWith('http'))) {
       setImagePreview(currentImageFieldValue);
     } else {
-      setImagePreview('');
+      setImagePreview(''); // Clear preview if field is empty or invalid
     }
   }, [currentImageFieldValue]);
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        toast({ title: "Arquivo Inválido", description: "Por favor, selecione um arquivo de imagem (ex: JPG, PNG, WEBP).", variant: "destructive" });
-        event.target.value = ''; 
-        return;
-      }
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (file.size > maxSize) {
-        toast({ title: "Arquivo Muito Grande", description: `O tamanho máximo da imagem é ${maxSize / (1024 * 1024)}MB.`, variant: "destructive" });
-        event.target.value = ''; 
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const dataUri = reader.result as string;
-        setValue('image', dataUri, { shouldValidate: true, shouldDirty: true });
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setValue('image', product?.image || '', { shouldValidate: true, shouldDirty: true });
-    }
-  };
 
   const onSubmit = (data: ProductFormData) => {
     try {
@@ -118,10 +93,10 @@ export default function ProductForm({ product }: ProductFormProps) {
         ...data,
         price: Number(data.price),
         stock: Number(data.stock),
+        image: data.image || (product?.image && !data.image ? product.image : (data.image || `https://picsum.photos/seed/${Date.now()}/400/300`)), // Fallback if image is cleared and was empty
       };
 
       if (product) {
-        // Ensure reviews are preserved if not part of form data
         const existingReviews = product.reviews || [];
         updateProduct(product.id, { ...productDataForStore, reviews: existingReviews } as Partial<Omit<Product, 'id'>>);
         toast({ title: "Produto Atualizado", description: `${data.name} foi atualizado com sucesso.` });
@@ -175,56 +150,13 @@ export default function ProductForm({ product }: ProductFormProps) {
             {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-            <div className="space-y-1.5">
-              <Label htmlFor="imageUpload">Imagem do Produto</Label>
-              <div className="flex items-center justify-center w-full">
-                  <label
-                      htmlFor="imageUpload"
-                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-border border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted/50 transition-colors"
-                  >
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
-                          <p className="mb-1 text-sm text-muted-foreground">
-                              <span className="font-semibold">Clique para enviar</span> ou arraste
-                          </p>
-                          <p className="text-xs text-muted-foreground">PNG, JPG, GIF, WEBP (MAX. 5MB)</p>
-                      </div>
-                      <Input id="imageUpload" type="file" className="hidden" accept="image/*" onChange={handleFileSelect} />
-                  </label>
-              </div>
-              {errors.image && <p className="text-sm text-destructive mt-1">{errors.image.message}</p>}
-            </div>
-            
-            {imagePreview ? (
-              <div className="space-y-1.5">
-                <Label>Preview</Label>
-                <div className="mt-1 border rounded-md p-2 flex justify-center items-center bg-muted/10 aspect-square w-full max-w-[250px] min-h-[100px] mx-auto md:mx-0">
-                   <Image
-                      src={imagePreview}
-                      alt="Preview do produto"
-                      width={230}
-                      height={230}
-                      className="rounded-md object-contain max-h-[230px]"
-                      onError={() => {
-                        setImagePreview(''); 
-                        if (currentImageFieldValue && !currentImageFieldValue.startsWith('data:image')) {
-                           setValue('image', '', { shouldValidate: true });
-                        }
-                        toast({ title: "Erro no Preview", description: "Não foi possível carregar o preview da imagem.", variant: "destructive"})
-                      }}
-                    />
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-1.5">
-                <Label>Preview</Label>
-                <div className="mt-1 border rounded-md p-2 flex justify-center items-center bg-muted/10 aspect-square w-full max-w-[250px] min-h-[100px] mx-auto md:mx-0 text-muted-foreground">
-                  Nenhuma imagem selecionada
-                </div>
-              </div>
-            )}
-          </div>
+          <ProductFormImageUpload
+            imagePreview={imagePreview}
+            currentImageFieldValue={currentImageFieldValue}
+            setValue={setValue}
+            errors={errors}
+            toast={toast}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">

@@ -6,7 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAdminAuthStore } from '@/store/adminAuthStore';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Package, LogOut, ShieldCheck, ShoppingBag, Menu, LayoutDashboard } from 'lucide-react'; // Added LayoutDashboard
+import { Package, LogOut, ShieldCheck, ShoppingBag, Menu, LayoutDashboard, Receipt } from 'lucide-react'; // Added Receipt
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -41,11 +41,13 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
 
   const handleLogout = () => {
     logout(); 
+    router.push('/admin/login'); // Redirect to login page after logout
   };
 
   const navItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/products', label: 'Produtos', icon: ShoppingBag },
+    { href: '/admin/orders', label: 'Pedidos', icon: Receipt }, // Added Orders link
   ];
 
   const SidebarNav = ({isMobile = false}: {isMobile?: boolean}) => (
@@ -81,6 +83,7 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
               <ShieldCheck className="h-6 w-6" />
               <span className="">Painel Admin</span>
             </Link>
+            <SheetTitle className="sr-only">Navegação Principal do Admin</SheetTitle>
           </div>
           <ScrollArea className="flex-1">
             <SidebarNav />
@@ -103,11 +106,10 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0">
               <SheetHeader className="flex h-14 flex-row items-center border-b px-4 py-0 space-y-0 lg:h-[60px] lg:px-6">
-                {/* Use a div for the title in SheetHeader if SheetTitle itself is not desired or causes nesting issues */}
-                <div className="text-lg font-semibold text-primary flex items-center gap-2">
+                <SheetTitle className="text-lg font-semibold text-primary flex items-center gap-2">
                     <ShieldCheck className="h-6 w-6" />
                     Painel Admin
-                </div>
+                </SheetTitle>
                  <SheetDescription className="sr-only">Admin navigation menu</SheetDescription>
               </SheetHeader>
               <ScrollArea className="flex-1">

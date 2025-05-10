@@ -18,15 +18,13 @@ interface ProductCardProps {
 
 function ProductCard({ product }: ProductCardProps) {
   const addItemToCart = useCartStore((state) => state.addItem);
-  const { toast } = useToast();
+  // Toasting is now primarily handled by the cartStore
+  // const { toast } = useToast(); 
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation(); 
-    if (product.stock > 0) {
-      addItemToCart(product);
-    } else {
-      toast({ title: "Produto Esgotado", description: "Este produto não está disponível em estoque no momento.", variant: "destructive" });
-    }
+    // The addItem function in the store now handles stock checks and toasts.
+    addItemToCart(product);
   };
 
   return (
@@ -42,7 +40,7 @@ function ProductCard({ product }: ProductCardProps) {
                 objectFit="contain" 
                 data-ai-hint="product image"
                 className="p-1" 
-                priority={false} // Explicitly set priority to false for non-LCP images
+                priority={false} 
               />
             </div>
           </CardHeader>
@@ -63,7 +61,8 @@ function ProductCard({ product }: ProductCardProps) {
           variant="default" 
           className="w-full bg-accent text-accent-foreground hover:bg-accent/90" 
           onClick={handleAddToCart}
-          disabled={product.stock === 0}
+          disabled={product.stock === 0} // Simple disable for completely out-of-stock items.
+                                         // Store handles detailed logic for items already in cart.
           aria-label={product.stock > 0 ? "Adicionar ao Carrinho" : "Produto Esgotado"}
         >
           <ShoppingCartIcon size={18} className="mr-2" />

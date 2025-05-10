@@ -20,6 +20,7 @@ function CartItemRow({ item }: CartItemRowProps) {
   const removeItem = useCartStore((state) => state.removeItem);
 
   const handleQuantityChange = (newQuantity: number) => {
+    // The store's updateQuantity will handle clamping to stock and removing if 0
     updateQuantity(item.id, newQuantity);
   };
 
@@ -56,9 +57,10 @@ function CartItemRow({ item }: CartItemRowProps) {
           onChange={(e) => handleQuantityChange(parseInt(e.target.value, 10) || 1)}
           className="w-12 sm:w-14 h-8 sm:h-9 text-center px-1 text-sm sm:text-base"
           min="1"
+          max={item.stock} // Add max attribute
           aria-label={`Quantidade de ${item.name}`}
         />
-        <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={() => handleQuantityChange(item.quantity + 1)}>
+        <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={() => handleQuantityChange(item.quantity + 1)} disabled={item.quantity >= item.stock}>
           <PlusCircle className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
           <span className="sr-only">Aumentar quantidade</span>
         </Button>

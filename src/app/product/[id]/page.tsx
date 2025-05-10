@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { useProductAdminStore } from '@/store/productAdminStore';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
-import { useAuthStore } from '@/store/authStore'; // Import auth store
+import { useAuthStore } from '@/store/authStore'; 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+// Input import was unused, removed.
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -26,8 +26,6 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 const reviewSchema = z.object({
-  // Author will be taken from currentUser if logged in, or a field if anonymous reviews are allowed
-  // For now, let's assume authenticated users.
   rating: z.coerce.number().min(1, "Avaliação mínima é 1 estrela.").max(5, "Avaliação máxima é 5 estrelas."),
   comment: z.string().min(10, "Comentário deve ter pelo menos 10 caracteres.").max(500, "Comentário muito longo."),
 });
@@ -64,10 +62,9 @@ export default function ProductDetailPage() {
   }, [productId, getProductById, mounted, productsInitialized]);
 
   const handleAddToCart = () => {
-    if (product && product.stock > 0) {
+    if (product) {
+      // The addItem function in the store now handles stock checks and toasts.
       addItemToCart(product);
-    } else if (product && product.stock === 0) {
-      toast({ title: "Produto Esgotado", description: "Este produto não está disponível em estoque.", variant: "destructive" });
     }
   };
 
@@ -84,14 +81,13 @@ export default function ProductDetailPage() {
     }
     
     addReviewToProduct(product.id, {
-      author: currentUser.name || currentUser.email, // Use name or email
+      author: currentUser.name || currentUser.email, 
       rating: data.rating,
       comment: data.comment,
     }, currentUser.id);
     
     toast({ title: "Avaliação Enviada", description: "Obrigado pela sua avaliação!" });
     reset(); 
-    // Re-fetch product to show new review immediately
     const updatedProduct = getProductById(productId);
     setProduct(updatedProduct || null);
   };

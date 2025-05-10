@@ -20,13 +20,23 @@ export const useCartStore = create<CartState>((set, get) => ({
   addItem: (product) => {
     set((state) => {
       const existingItem = state.items.find((item) => item.id === product.id);
+      if (product.stock === 0) {
+        toast({ title: "Produto Esgotado", description: `${product.name} não está disponível em estoque.`, variant: "destructive" });
+        return state; // No change
+      }
+
       if (existingItem) {
-        toast({ title: "Produto já no carrinho", description: `Quantidade de ${product.name} aumentada.` });
-        return {
-          items: state.items.map((item) =>
-            item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-          ),
-        };
+        if (existingItem.quantity < product.stock) {
+          toast({ title: "Produto já no carrinho", description: `Quantidade de ${product.name} aumentada.` });
+          return {
+            items: state.items.map((item) =>
+              item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+            ),
+          };
+        } else {
+          toast({ title: "Limite de Estoque Atingido", description: `Você já adicionou a quantidade máxima em estoque para ${product.name}.`, variant: "destructive" });
+          return state; // No change
+        }
       }
       toast({ title: "Produto adicionado", description: `${product.name} foi adicionado ao carrinho.` });
       return { items: [...state.items, { ...product, quantity: 1 }] };
@@ -42,17 +52,36 @@ export const useCartStore = create<CartState>((set, get) => ({
     }
   },
   updateQuantity: (productId, quantity) => {
-    const productName = get().items.find(item => item.id === productId)?.name || "Produto";
-    set((state) => ({
-      items: state.items.map((item) =>
-        item.id === productId ? { ...item, quantity: Math.max(0, quantity) } : item
-      ).filter(item => item.quantity > 0), // Remove if quantity is 0
-    }));
-     if (quantity === 0 && get().items.find(item => item.id === productId) === undefined) { // Check if item was actually removed
-      toast({ title: "Produto removido", description: `${productName} foi removido do carrinho.` });
-    } else if (quantity > 0) {
-      toast({ title: "Quantidade atualizada", description: `Quantidade de ${productName} atualizada.` });
-    }
+    set((state) => {
+      const itemToUpdate = state.items.find((item) => item.id === productId);
+      if (!itemToUpdate) return state; // Should not happen
+
+      const productName = itemToUpdate.name;
+      let newQuantity = Math.max(0, quantity); // Ensure quantity is not negative
+
+      if (newQuantity > itemToUpdate.stock) {
+        newQuantity = itemToUpdate.stock;
+        toast({
+          title: "Limite de Estoque Atingido",
+          description: `A quantidade de ${productName} foi ajustada para o máximo disponível em estoque (${itemToUpdate.stock}).`,
+          variant: "destructive",
+        });
+      }
+
+      if (newQuantity === 0) {
+        toast({ title: "Produto removido", description: `${productName} foi removido do carrinho.` });
+        return { items: state.items.filter((item) => item.id !== productId) };
+      } else {
+        if (quantity !== itemToUpdate.quantity && quantity <= itemToUpdate.stock && quantity > 0) { // Only toast general update if not a stock limit or removal
+             toast({ title: "Quantidade atualizada", description: `Quantidade de ${productName} atualizada para ${newQuantity}.` });
+        }
+        return {
+          items: state.items.map((item) =>
+            item.id === productId ? { ...item, quantity: newQuantity } : item
+          ),
+        };
+      }
+    });
   },
   clearCart: () => {
     set({ items: [] });
@@ -65,4 +94,3 @@ export const useCartStore = create<CartState>((set, get) => ({
     return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
   },
 }));
-

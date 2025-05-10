@@ -7,14 +7,15 @@ interface AdminAuthState {
   logout: () => void;
 }
 
-const ADMIN_USERNAME = 'admin'; // Username is fixed as 'admin'
-const ADMIN_PASSWORD = 'admin1010'; // Hardcoded password as per request
+// IMPORTANT: Storing and checking passwords on the client-side is not secure for production applications.
+// This an improvement over hardcoding directly in the source, but a proper backend authentication is recommended.
+// The password will be exposed in the client-side bundle.
+const ADMIN_PASSWORD_FROM_ENV = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin1010'; // Fallback for when ENV is not set
 
 export const useAdminAuthStore = create<AdminAuthState>((set) => ({
   isAdminLoggedIn: false,
   login: (password) => {
-    // In a real app, also check username if it's not fixed
-    if (password === ADMIN_PASSWORD) {
+    if (password === ADMIN_PASSWORD_FROM_ENV) {
       set({ isAdminLoggedIn: true });
       if (typeof window !== 'undefined') {
         localStorage.setItem('isAdminLoggedIn', 'true');
@@ -33,13 +34,6 @@ export const useAdminAuthStore = create<AdminAuthState>((set) => ({
         localStorage.removeItem('isAdminLoggedIn');
       }
   },
-  // Initialize state from localStorage if available
-  // This part needs to be handled carefully to avoid SSR/hydration issues.
-  // A common pattern is to set it in a useEffect in a top-level client component.
-  // For simplicity here, we'll initialize and let AdminProtectedLayout handle re-check.
-  // Alternatively, could load it here if running only on client.
-  // A more robust way to initialize from localStorage:
-  // isAdminLoggedIn: typeof window !== 'undefined' ? localStorage.getItem('isAdminLoggedIn') === 'true' : false,
 }));
 
 // Check localStorage on initial load (client-side only)

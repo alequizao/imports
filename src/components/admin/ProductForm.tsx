@@ -97,8 +97,8 @@ export default function ProductForm({ product }: ProductFormProps) {
       router.push('/admin/products');
       router.refresh(); // Force refresh of the products page to show updated list
     } catch (error) {
-      toast({ title: "Erro", description: "Ocorreu um erro ao salvar o produto.", variant: "destructive" });
-      console.error("Product form submission error:", error);
+      console.error("Erro detalhado ao salvar o produto:", error);
+      toast({ title: "Erro ao Salvar Produto", description: "Ocorreu um erro inesperado. Verifique o console para mais detalhes.", variant: "destructive" });
     }
   };
 
@@ -202,4 +202,3 @@ export default function ProductForm({ product }: ProductFormProps) {
     </Card>
   );
 }
-

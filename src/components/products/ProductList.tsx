@@ -8,6 +8,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Package2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton'; // Added import
 
 export default function ProductList() {
   const { products: productsFromStore, isInitialized } = useProductAdminStore((state) => ({
@@ -92,3 +93,4 @@ export default function ProductList() {
     </div>
   );
 }
+

@@ -1,11 +1,8 @@
-
 "use client";
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Product, Review } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
-// referenceSeedProducts is not used for initialization anymore, store starts empty if no localStorage.
-// import { referenceSeedProducts } from '@/data/products'; 
 
 interface ProductAdminState {
   products: Product[];
@@ -25,7 +22,7 @@ const ensureProductFields = (product: any, existingId?: string): Product => {
     name: product.name || '',
     description: product.description || '',
     price: typeof product.price === 'number' && !isNaN(product.price) ? product.price : 0,
-    image: product.image || `https://picsum.photos/seed/${id}/400/300`,
+    image: product.image || '', // Default to empty string if not provided, form should enforce it
     category: product.category || '',
     color: product.color || '',
     size: product.size || '',
@@ -44,14 +41,14 @@ const ensureProductFields = (product: any, existingId?: string): Product => {
 export const useProductAdminStore = create(
   persist<ProductAdminState>(
     (set, get) => ({
-      products: [], // Initialize with an empty array. Persisted data will override this.
-      isInitialized: false, // Will be set to true after rehydration
+      products: [], 
+      isInitialized: false, // Will be set to true by the merge function after hydration
 
       addProduct: (productData) => {
         const newProductWithDefaults: Omit<Product, 'id'> = {
           ...productData,
           stock: productData.stock ?? 0,
-          reviews: [], // New products start with no reviews
+          reviews: [], 
         };
         const newProduct: Product = ensureProductFields(newProductWithDefaults);
         set((state) => ({ products: [...state.products, newProduct] }));
@@ -71,8 +68,8 @@ export const useProductAdminStore = create(
       getProductById: (productId) => {
         return get().products.find((p) => p.id === productId);
       },
-      setProducts: (newProducts) => {
-        set({ products: newProducts.map(p => ensureProductFields(p)) });
+      setProducts: (newProducts) => { 
+        set({ products: newProducts.map(p => ensureProductFields(p)), isInitialized: true });
       },
       addReviewToProduct: (productId, reviewData) => {
         set((state) => ({
@@ -96,28 +93,29 @@ export const useProductAdminStore = create(
       partialize: (state) => ({
         products: state.products.map(p => ensureProductFields(p)) 
       }),
-      onRehydrateStorage: () => (hydratedState, error) => {
-        if (error) {
-          console.error("ProductAdminStore: Error during rehydration. Store will use initial empty state if hydration failed.", error);
-          // Let persist middleware handle falling back to initial state (empty array)
-          useProductAdminStore.setState({ isInitialized: true });
-          return;
+      merge: (persistedState, currentState) => {
+        let newProducts = currentState.products; // Default to initial products (empty array)
+        
+        // `persistedState` is the object from storage, matching the `partialize` structure
+        if (persistedState && typeof persistedState === 'object' && 'products' in persistedState) {
+          const loadedProducts = (persistedState as { products: Product[] }).products;
+          if (Array.isArray(loadedProducts)) {
+            newProducts = loadedProducts.map(p => ensureProductFields(p));
+          }
         }
-
-        if (hydratedState?.products && Array.isArray(hydratedState.products)) {
-          hydratedState.products = hydratedState.products.map(p => ensureProductFields(p));
-        } else if (hydratedState) {
-          // If localStorage had something but not a valid products array, start fresh
-          hydratedState.products = [];
-        }
-        // If hydratedState is null (e.g. first time user), it will use the initial value (empty array)
-        useProductAdminStore.setState({ isInitialized: true });
-      }
+        
+        return {
+          ...currentState, // Spread current state to keep methods and default values
+          products: newProducts, // Set hydrated and processed products
+          isInitialized: true, // Mark as initialized
+        };
+      },
     }
   )
 );
 
-// Trigger rehydration check (only on client)
+// Trigger rehydration attempt on client load
 if (typeof window !== 'undefined') {
+  // Calling getState() is enough to initiate the persisted state loading
   useProductAdminStore.getState(); 
 }

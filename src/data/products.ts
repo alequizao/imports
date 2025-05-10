@@ -9,6 +9,9 @@ export const products: Product[] = [
     image: 'https://picsum.photos/seed/perfumeA/400/300',
     dataAiHint: 'perfume bottle',
     category: 'Perfumes',
+    color: 'Transparente',
+    size: '100ml',
+    model: 'Alpha Pour Homme',
   },
   {
     id: '2',
@@ -18,6 +21,9 @@ export const products: Product[] = [
     image: 'https://picsum.photos/seed/sneakerX/400/300',
     dataAiHint: 'sport shoes',
     category: 'Calçados',
+    color: 'Preto/Branco',
+    size: '42 BR',
+    model: 'BoostX Runner',
   },
   {
     id: '3',
@@ -27,6 +33,9 @@ export const products: Product[] = [
     image: 'https://picsum.photos/seed/watchE/400/300',
     dataAiHint: 'classic watch',
     category: 'Acessórios',
+    color: 'Prata com pulseira Marrom',
+    size: 'Único',
+    model: 'Elegance Timepiece',
   },
   {
     id: '4',
@@ -36,6 +45,9 @@ export const products: Product[] = [
     image: 'https://picsum.photos/seed/headphonesP/400/300',
     dataAiHint: 'wireless headphones',
     category: 'Eletrônicos',
+    color: 'Preto Fosco',
+    size: 'Ajustável',
+    model: 'ProSound Elite',
   },
   {
     id: '5',
@@ -45,6 +57,9 @@ export const products: Product[] = [
     image: 'https://picsum.photos/seed/leatherBag/400/300',
     dataAiHint: 'leather handbag',
     category: 'Acessórios',
+    color: 'Caramelo',
+    size: 'Média',
+    model: 'Lux Tote',
   },
   {
     id: '6',
@@ -54,6 +69,9 @@ export const products: Product[] = [
     image: 'https://picsum.photos/seed/sunglassesV/400/300',
     dataAiHint: 'aviator sunglasses',
     category: 'Acessórios',
+    color: 'Dourado com lentes Verdes',
+    size: 'Único',
+    model: 'Prime Aviators',
   },
 ];
 

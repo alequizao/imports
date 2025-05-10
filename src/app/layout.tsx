@@ -5,7 +5,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import ChatWidget from '@/components/chat/ChatWidget';
+// import ChatWidget from '@/components/chat/ChatWidget'; // Removed ChatWidget
 import { STORE_NAME } from '@/lib/constants';
 
 const geistSans = Geist({
@@ -52,7 +52,7 @@ export default function RootLayout({
         </main>
         <Footer />
         <Toaster />
-        <ChatWidget />
+        {/* <ChatWidget /> */} {/* Removed ChatWidget */}
       </body>
     </html>
   );

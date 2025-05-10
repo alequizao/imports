@@ -1,7 +1,7 @@
 
 "use client";
 import { STORE_NAME } from '@/lib/constants';
-import { Instagram, Mail, Newspaper } from 'lucide-react'; // Added Newspaper
+import { Instagram, Mail } from 'lucide-react';
 import NewsletterForm from './NewsletterForm'; 
 import Link from 'next/link';
 
@@ -12,12 +12,6 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         
         <NewsletterForm /> 
-
-        <nav className="mt-8 mb-6 flex justify-center items-center space-x-6">
-            <Link href="/blog" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
-                <Newspaper size={20} /> Blog
-            </Link>
-        </nav>
 
         <div className="mt-6 flex justify-center items-center space-x-6">
           <a
@@ -61,3 +55,4 @@ export default function Footer() {
     </footer>
   );
 }
+

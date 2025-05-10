@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Package, ShoppingCart, UserCog, Heart, User, LogIn, LogOut, Newspaper, Menu } from 'lucide-react';
+import { Package, ShoppingCart, UserCog, Heart, User, LogIn, LogOut, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/store/cartStore';
@@ -66,13 +66,6 @@ export default function Header() {
         <Link href="/" passHref>
           <Button variant="ghost" className={`w-full justify-start ${!isMobile && 'text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground'} px-2 sm:px-4 text-sm sm:text-base`}>
             Catálogo
-          </Button>
-        </Link>
-      </MobileSheetCloseWrapper>
-      <MobileSheetCloseWrapper isMobile={isMobile}>
-        <Link href="/blog" passHref>
-          <Button variant="ghost" className={`w-full justify-start ${!isMobile && 'text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground'} px-2 sm:px-4 text-sm sm:text-base`}>
-           <Newspaper size={20} className={`mr-2 ${!isMobile ? 'sm:hidden' : ''}`} />Blog
           </Button>
         </Link>
       </MobileSheetCloseWrapper>
@@ -182,30 +175,30 @@ export default function Header() {
 
         {/* Mobile Navigation Trigger */}
         <div className="md:hidden">
-          <Sheet> {/* This is the Dialog root */}
+          <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80">
                 <Menu size={24} />
                 <span className="sr-only">Abrir menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] p-0"> {/* Adjusted padding */}
+            <SheetContent side="right" className="w-[280px] p-0">
               <SheetHeader className="flex flex-row items-center justify-between border-b p-4">
-                <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                    <Package size={28} />
-                    <Logo className="h-7 w-auto" /> 
-                </Link>
-                <SheetTitle className="sr-only">{STORE_NAME} Menu</SheetTitle> 
-                <SheetDescription className="sr-only">Menu principal de navegação do site.</SheetDescription>
-                {/* SheetClose is already DialogClose equivalent */}
+                <SheetTitle className="text-lg font-semibold text-primary">
+                  <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                      <Package size={28} />
+                      <Logo className="h-7 w-auto" /> 
+                  </Link>
+                </SheetTitle>
+                <SheetDescription className="sr-only">{STORE_NAME} Menu. Menu principal de navegação do site.</SheetDescription>
                 <SheetClose asChild>
                     <Button variant="ghost" size="icon">
-                        <Menu size={24} /> {/* Or X icon when open */}
+                        <Menu size={24} />
                         <span className="sr-only">Fechar menu</span>
                     </Button>
                 </SheetClose>
               </SheetHeader>
-              <nav className="flex flex-col gap-3 p-4"> {/* Added padding back here */}
+              <nav className="flex flex-col gap-3 p-4">
                 {commonNavLinks(true)}
                 <MobileSheetCloseWrapper isMobile={true}>
                   <Link href="/wishlist" passHref>

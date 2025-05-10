@@ -1,0 +1,62 @@
+import type { Product } from '@/lib/types';
+
+export const products: Product[] = [
+  {
+    id: '1',
+    name: 'Perfume Importado Alpha',
+    description: 'Uma fragrância marcante para homens modernos e sofisticados. Notas amadeiradas e cítricas.',
+    price: 349.90,
+    image: 'https://picsum.photos/seed/perfumeA/400/300',
+    dataAiHint: 'perfume bottle',
+    category: 'Perfumes',
+  },
+  {
+    id: '2',
+    name: 'Tênis Esportivo BoostX',
+    description: 'Conforto e performance para suas corridas. Tecnologia de amortecimento avançada.',
+    price: 599.00,
+    image: 'https://picsum.photos/seed/sneakerX/400/300',
+    dataAiHint: 'sport shoes',
+    category: 'Calçados',
+  },
+  {
+    id: '3',
+    name: 'Relógio Clássico Elegance',
+    description: 'Design atemporal com pulseira de couro genuíno e mostrador minimalista.',
+    price: 780.50,
+    image: 'https://picsum.photos/seed/watchE/400/300',
+    dataAiHint: 'classic watch',
+    category: 'Acessórios',
+  },
+  {
+    id: '4',
+    name: 'Fone de Ouvido ProSound',
+    description: 'Qualidade de som imersiva com cancelamento de ruído ativo. Ideal para música e chamadas.',
+    price: 450.00,
+    image: 'https://picsum.photos/seed/headphonesP/400/300',
+    dataAiHint: 'wireless headphones',
+    category: 'Eletrônicos',
+  },
+  {
+    id: '5',
+    name: 'Bolsa de Couro Lux',
+    description: 'Elegância e praticidade em uma bolsa espaçosa feita com couro de alta qualidade.',
+    price: 620.00,
+    image: 'https://picsum.photos/seed/leatherBag/400/300',
+    dataAiHint: 'leather handbag',
+    category: 'Acessórios',
+  },
+  {
+    id: '6',
+    name: 'Óculos de Sol Aviador Prime',
+    description: 'Proteção UV400 com estilo clássico aviador. Lentes polarizadas.',
+    price: 289.99,
+    image: 'https://picsum.photos/seed/sunglassesV/400/300',
+    dataAiHint: 'aviator sunglasses',
+    category: 'Acessórios',
+  },
+];
+
+export const formatPrice = (price: number) => {
+  return price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+};

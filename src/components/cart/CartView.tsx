@@ -18,7 +18,7 @@ export default function CartView() {
   const cartItemsFromStore = useCartStore((state) => state.items);
   const getTotalPrice = useCartStore((state) => state.getTotalPrice);
   const clearCart = useCartStore((state) => state.clearCart);
-  const removeItemFromCart = useCartStore((state) => state.removeItem); // Get removeItem to use with options
+  const removeItemFromCart = useCartStore((state) => state.removeItem);
 
   const productsFromAdminStore = useProductAdminStore((state) => state.products);
   const isProductStoreInitialized = useProductAdminStore((state) => state.isInitialized);
@@ -33,7 +33,7 @@ export default function CartView() {
     if (!mounted || !isProductStoreInitialized || !productsFromAdminStore || !cartItemsFromStore) return;
 
     const itemsToRemove: { id: string, name: string }[] = [];
-    const currentCartItems = useCartStore.getState().items; // Get fresh state
+    const currentCartItems = useCartStore.getState().items;
 
     currentCartItems.forEach(cartItem => {
       const productExists = productsFromAdminStore.some(p => p.id === cartItem.id);
@@ -45,7 +45,6 @@ export default function CartView() {
     if (itemsToRemove.length > 0) {
       const removedProductNames = itemsToRemove.map(item => item.name);
       itemsToRemove.forEach(item => {
-        // Use the removeItem from the store directly with suppressToast option
         removeItemFromCart(item.id, { suppressToast: true });
       });
 
@@ -65,22 +64,24 @@ export default function CartView() {
   const handleWhatsAppCheckout = () => {
     if (itemsForDisplay.length === 0) {
       toast({
-        title: "Carrinho Vazio",
+        title: "🛒 Carrinho Vazio",
         description: "Adicione produtos ao carrinho antes de finalizar a compra.",
         variant: "destructive",
       });
       return;
     }
 
-    let message = `Olá ${STORE_NAME}! Gostaria de fazer o seguinte pedido:\n\n`;
+    let message = `👋 Olá ${STORE_NAME}!\n\n`;
+    message += `Gostaria de fazer o seguinte pedido:\n\n`;
+    message += `🛍️ *Itens do Pedido:*\n`;
     let messageTotalPrice = 0;
     itemsForDisplay.forEach(item => {
       const itemSubtotal = item.price * item.quantity;
-      message += `- ${item.name} (x${item.quantity}): ${formatPrice(itemSubtotal)}\n`;
+      message += `  • ${item.name} (x${item.quantity}) - ${formatPrice(itemSubtotal)}\n`;
       messageTotalPrice += itemSubtotal;
     });
-    message += `\nTotal: ${formatPrice(messageTotalPrice)}\n\n`;
-    message += `Aguardo o contato para combinar o pagamento e entrega.`;
+    message += `\n💰 *Total do Pedido:* ${formatPrice(messageTotalPrice)}\n\n`;
+    message += `Aguardo o contato para combinar o pagamento e a entrega. ✅`;
 
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
@@ -186,3 +187,4 @@ export default function CartView() {
     </Card>
   );
 }
+

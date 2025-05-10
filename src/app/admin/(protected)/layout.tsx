@@ -7,7 +7,7 @@ import { useAdminAuthStore } from '@/store/adminAuthStore';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Package, LogOut, ShieldCheck, ShoppingBag, Menu, LayoutDashboard, Receipt } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription, SheetClose } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -53,24 +53,39 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
 
   const SidebarNav = ({isMobile = false}: {isMobile?: boolean}) => (
     <nav className={`flex flex-col gap-2 ${isMobile ? 'p-4' : 'p-2'}`}>
-      {navItems.map((item) => (
-        <Link href={item.href} key={item.label} passHref>
+      {navItems.map((item) => {
+        const buttonContent = (
+          <>
+            <item.icon className="mr-2 h-5 w-5" /> {item.label}
+          </>
+        );
+
+        const navButton = (
           <Button
             variant={pathname.startsWith(item.href) ? "secondary" : "ghost"}
             className="w-full justify-start"
             aria-current={pathname.startsWith(item.href) ? "page" : undefined}
-            onClick={() => {
-              if (isMobile) {
-                // Attempt to close the sheet by simulating a click on its trigger
-                const trigger = document.querySelector('button[data-radix-sheet-trigger="true"]');
-                if (trigger instanceof HTMLElement) trigger.click();
-              }
-            }}
           >
-            <item.icon className="mr-2 h-5 w-5" /> {item.label}
+            {buttonContent}
           </Button>
-        </Link>
-      ))}
+        );
+
+        if (isMobile) {
+          return (
+            <SheetClose asChild key={item.label}>
+              <Link href={item.href} passHref>
+                {navButton}
+              </Link>
+            </SheetClose>
+          );
+        } else {
+          return (
+            <Link href={item.href} key={item.label} passHref>
+              {navButton}
+            </Link>
+          );
+        }
+      })}
     </nav>
   );
 

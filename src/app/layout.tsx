@@ -8,15 +8,8 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { STORE_NAME } from '@/lib/constants';
 
-const geistSans = GeistSans({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = GeistMono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
+// GeistSans and GeistMono are already the font objects.
+// No need to call them as functions. Their 'variable' property can be accessed directly.
 
 export const metadata: Metadata = {
   title: {
@@ -39,10 +32,6 @@ export const metadata: Metadata = {
     description: `Qualidade e exclusividade em produtos importados é na ${STORE_NAME}.`,
     // images: ['/twitter-image.png'], // Add a Twitter image URL
   },
-  // viewport: 'width=device-width, initial-scale=1', // Next.js handles this by default
-  // icons: { // Next.js handles favicon.ico by default in public folder
-  //   icon: '/favicon.ico',
-  // }
 };
 
 export default function RootLayout({
@@ -52,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased flex flex-col min-h-screen bg-background`}>
+      <body className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased flex flex-col min-h-screen bg-background`}>
         <Header />
         <main className="flex-grow container mx-auto px-4 py-8">
           {children}
@@ -63,3 +52,4 @@ export default function RootLayout({
     </html>
   );
 }
+

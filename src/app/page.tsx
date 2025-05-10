@@ -1,3 +1,4 @@
+
 import ProductList from '@/components/products/ProductList';
 import { Separator } from '@/components/ui/separator';
 

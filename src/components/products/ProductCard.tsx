@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -20,7 +21,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <Card id={product.id} className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
       <CardHeader className="p-0">
         <div className="aspect-[4/3] relative w-full">
           <Image

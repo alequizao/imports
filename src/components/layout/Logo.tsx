@@ -1,3 +1,4 @@
+
 // src/components/layout/Logo.tsx
 import type { SVGProps } from 'react';
 import { LOGO_LETTERS } from '@/lib/constants';
@@ -9,8 +10,8 @@ export default function Logo(props: SVGProps<SVGSVGElement>) {
       viewBox="0 0 50 40" // ViewBox adjusted for "VS" or similar short text
       width="50" // Default width, can be overridden
       height="40" // Default height, can be overridden
-      aria-label={`${LOGO_LETTERS} Imports Logo`} 
-      {...props} 
+      aria-label={`${LOGO_LETTERS} Imports Logo`}
+      {...props}
     >
       <defs>
         <linearGradient id="vsLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -20,7 +21,7 @@ export default function Logo(props: SVGProps<SVGSVGElement>) {
       </defs>
       <text
         x="50%" // Center horizontally
-        y="32" 
+        y="32"
         fontFamily="var(--font-geist-sans), sans-serif"
         fontSize="30" // Adjusted font size for potentially variable letters
         fontWeight="bold"

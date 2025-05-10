@@ -10,7 +10,7 @@ import { ShoppingCart, AlertTriangle, Send, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { formatPrice } from '@/lib/utils';
 import { WHATSAPP_NUMBER, STORE_NAME } from '@/lib/constants';
-import { useToast } from "@/hooks/use-toast"; 
+import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -18,10 +18,11 @@ export default function CartView() {
   const cartItemsFromStore = useCartStore((state) => state.items);
   const getTotalPrice = useCartStore((state) => state.getTotalPrice);
   const clearCart = useCartStore((state) => state.clearCart);
-  
+  const removeItemFromCart = useCartStore((state) => state.removeItem); // Get removeItem to use with options
+
   const productsFromAdminStore = useProductAdminStore((state) => state.products);
   const isProductStoreInitialized = useProductAdminStore((state) => state.isInitialized);
-  const { toast } = useToast(); 
+  const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -32,7 +33,7 @@ export default function CartView() {
     if (!mounted || !isProductStoreInitialized || !productsFromAdminStore || !cartItemsFromStore) return;
 
     const itemsToRemove: { id: string, name: string }[] = [];
-    const currentCartItems = useCartStore.getState().items;
+    const currentCartItems = useCartStore.getState().items; // Get fresh state
 
     currentCartItems.forEach(cartItem => {
       const productExists = productsFromAdminStore.some(p => p.id === cartItem.id);
@@ -44,25 +45,26 @@ export default function CartView() {
     if (itemsToRemove.length > 0) {
       const removedProductNames = itemsToRemove.map(item => item.name);
       itemsToRemove.forEach(item => {
-        useCartStore.getState().removeItem(item.id, { suppressToast: true });
+        // Use the removeItem from the store directly with suppressToast option
+        removeItemFromCart(item.id, { suppressToast: true });
       });
 
-      toast({ 
+      toast({
         title: "Itens Atualizados no Carrinho",
         description: `Os seguintes produtos não estão mais disponíveis e foram removidos: ${removedProductNames.join(', ')}.`,
         variant: "destructive",
         duration: 7000,
       });
     }
-  }, [mounted, isProductStoreInitialized, productsFromAdminStore, cartItemsFromStore, toast]); 
+  }, [mounted, isProductStoreInitialized, productsFromAdminStore, cartItemsFromStore, toast, removeItemFromCart]);
 
 
-  const itemsForDisplay = cartItemsFromStore; 
+  const itemsForDisplay = cartItemsFromStore;
   const currentTotalPrice = getTotalPrice();
 
   const handleWhatsAppCheckout = () => {
     if (itemsForDisplay.length === 0) {
-      toast({ 
+      toast({
         title: "Carrinho Vazio",
         description: "Adicione produtos ao carrinho antes de finalizar a compra.",
         variant: "destructive",
@@ -84,7 +86,7 @@ export default function CartView() {
     window.open(whatsappUrl, '_blank');
   };
 
-  if (!mounted || !isProductStoreInitialized) { 
+  if (!mounted || !isProductStoreInitialized) {
     return (
       <Card className="w-full max-w-3xl mx-auto shadow-xl">
         <CardHeader>
@@ -93,31 +95,35 @@ export default function CartView() {
             <Skeleton className="h-7 w-48 rounded" />
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="divide-y divide-border">
           {[...Array(2)].map((_, index) => (
-            <div key={index} className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b rounded-lg">
-              <div className="flex items-center gap-4 w-full sm:w-2/5">
-                <Skeleton className="w-[80px] h-[80px] rounded-md" />
-                <div className="space-y-2">
-                  <Skeleton className="h-5 w-32 rounded" />
-                  <Skeleton className="h-4 w-20 rounded" />
+            <div key={index} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-x-4 gap-y-3 p-4 first:pt-0 last:pb-0">
+              <div className="flex items-center gap-3 flex-grow min-w-0 sm:w-2/5 md:w-1/2">
+                <Skeleton className="w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] rounded-md flex-shrink-0" />
+                <div className="flex-grow self-stretch flex flex-col justify-center space-y-2">
+                  <Skeleton className="h-5 w-3/4 rounded" />
+                  <Skeleton className="h-4 w-1/2 rounded" />
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-9 w-9 rounded" />
-                <Skeleton className="h-9 w-16 rounded" />
-                <Skeleton className="h-9 w-9 rounded" />
+              <div className="flex items-center justify-start sm:justify-center gap-1 sm:gap-2">
+                <Skeleton className="h-8 w-8 sm:h-9 sm:w-9 rounded" />
+                <Skeleton className="w-12 sm:w-14 h-8 sm:h-9 rounded" />
+                <Skeleton className="h-8 w-8 sm:h-9 sm:w-9 rounded" />
               </div>
-              <Skeleton className="h-6 w-24 rounded sm:w-auto" />
-              <Skeleton className="h-9 w-9 rounded" />
+              <div className="sm:w-[100px] md:w-[120px] flex-shrink-0">
+                <Skeleton className="h-6 w-20 sm:w-full rounded" />
+              </div>
+              <div className="flex justify-start sm:justify-end flex-shrink-0">
+                <Skeleton className="h-8 w-8 sm:h-9 sm:w-9 rounded" />
+              </div>
             </div>
           ))}
         </CardContent>
         <CardFooter className="flex flex-col sm:flex-row justify-between items-center p-6 border-t gap-4">
           <Skeleton className="h-7 w-32 rounded" />
-          <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
-            <Skeleton className="h-10 w-40 rounded-md" />
-            <Skeleton className="h-10 w-56 rounded-md" />
+          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
+            <Skeleton className="h-10 w-full sm:w-40 rounded-md" />
+            <Skeleton className="h-10 w-full sm:w-56 rounded-md" />
           </div>
         </CardFooter>
       </Card>
@@ -153,23 +159,23 @@ export default function CartView() {
           <ShoppingCart size={28} /> Meu Carrinho ({itemsForDisplay.reduce((acc, item) => acc + item.quantity, 0)} itens)
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="divide-y divide-border p-0 sm:p-6 sm:pt-0">
         {itemsForDisplay.map(item => (
           <CartItemRow key={item.id} item={item} />
         ))}
       </CardContent>
-      <CardFooter className="flex flex-col sm:flex-row justify-between items-center p-6 border-t gap-4">
-        <div className="text-xl font-bold text-secondary">
+      <CardFooter className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center p-4 sm:p-6 border-t gap-3 sm:gap-4">
+        <div className="text-xl font-bold text-secondary w-full text-center sm:w-auto sm:text-left">
           Total: {formatPrice(currentTotalPrice)}
         </div>
-        <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
-          <Button variant="outline" onClick={clearCart} className="text-destructive border-destructive hover:bg-destructive/10">
+        <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2 items-stretch sm:items-center">
+          <Button variant="outline" onClick={clearCart} className="text-destructive border-destructive hover:bg-destructive/10 w-full sm:w-auto">
             <Trash2 size={18} className="mr-2" />
             Esvaziar Carrinho
           </Button>
-          <Button 
-            onClick={handleWhatsAppCheckout} 
-            className="bg-accent text-accent-foreground hover:bg-accent/90"
+          <Button
+            onClick={handleWhatsAppCheckout}
+            className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto"
             aria-label="Finalizar Compra via WhatsApp"
           >
             <Send size={18} className="mr-2" />

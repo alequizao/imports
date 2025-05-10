@@ -10,7 +10,7 @@ import { ShoppingCart, AlertTriangle, Send, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { formatPrice } from '@/data/products';
 import { WHATSAPP_NUMBER, STORE_NAME } from '@/lib/constants';
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast"; // Changed: Import useToast hook
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -20,7 +20,7 @@ export default function CartView() {
   const clearCart = useCartStore((state) => state.clearCart);
   
   const productsFromAdminStore = useProductAdminStore((state) => state.products);
-  const { toast: showToast } = useToast(); // Renamed to avoid conflict with toast function from hook
+  const { toast } = useToast(); // Changed: Get toast function from the hook
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -46,14 +46,14 @@ export default function CartView() {
         useCartStore.getState().removeItem(item.id, { suppressToast: true });
       });
 
-      showToast({
+      toast({ // Changed: Use toast function from hook
         title: "Itens Atualizados no Carrinho",
         description: `Os seguintes produtos não estão mais disponíveis e foram removidos: ${removedProductNames.join(', ')}.`,
         variant: "destructive",
         duration: 7000,
       });
     }
-  }, [mounted, productsFromAdminStore, cartItemsFromStore, showToast]);
+  }, [mounted, productsFromAdminStore, cartItemsFromStore, toast]); // Changed: Added toast to dependency array
 
 
   const itemsForDisplay = cartItemsFromStore; 
@@ -61,7 +61,7 @@ export default function CartView() {
 
   const handleWhatsAppCheckout = () => {
     if (itemsForDisplay.length === 0) {
-      showToast({
+      toast({ // Changed: Use toast function from hook
         title: "Carrinho Vazio",
         description: "Adicione produtos ao carrinho antes de finalizar a compra.",
         variant: "destructive",

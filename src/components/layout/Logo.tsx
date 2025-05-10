@@ -8,7 +8,7 @@ export default function Logo(props: SVGProps<SVGSVGElement>) {
       viewBox="0 0 50 40" // ViewBox adjusted for "VS"
       width="50" // Default width, can be overridden
       height="40" // Default height, can be overridden
-      aria-label="VS Imports Brasil Logo" // Accessibility
+      aria-label="VS Imports Logo" // Accessibility
       {...props} // Spread remaining props like className, fill, etc.
     >
       <defs>

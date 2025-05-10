@@ -1,7 +1,7 @@
 
 import { STORE_NAME } from '@/lib/constants';
 import { Instagram, Mail } from 'lucide-react';
-import NewsletterForm from './NewsletterForm'; // Import NewsletterForm
+import NewsletterForm from './NewsletterForm'; 
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -9,7 +9,7 @@ export default function Footer() {
     <footer className="bg-muted text-muted-foreground py-8 text-center">
       <div className="container mx-auto px-4">
         
-        <NewsletterForm /> {/* Add NewsletterForm here */}
+        <NewsletterForm /> 
 
         <div className="mt-10 flex justify-center items-center space-x-6">
           <a

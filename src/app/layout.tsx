@@ -5,7 +5,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import ChatWidget from '@/components/chat/ChatWidget'; // Added ChatWidget
+import ChatWidget from '@/components/chat/ChatWidget';
 import { STORE_NAME } from '@/lib/constants';
 
 const geistSans = Geist({
@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: `${STORE_NAME} - Produtos Importados de Qualidade`,
   description: `Encontre os melhores produtos importados na ${STORE_NAME}. Qualidade, exclusividade e os melhores preços para você.`,
-  keywords: "produtos importados, loja online, eletrônicos, perfumes, acessórios, moda, VS Imports Brasil",
+  keywords: "produtos importados, loja online, eletrônicos, perfumes, acessórios, moda, VS Imports",
   openGraph: {
     title: `${STORE_NAME} - Produtos Importados de Qualidade`,
     description: `Descubra uma seleção exclusiva de produtos importados na ${STORE_NAME}.`,
@@ -52,7 +52,7 @@ export default function RootLayout({
         </main>
         <Footer />
         <Toaster />
-        <ChatWidget /> {/* Added ChatWidget here */}
+        <ChatWidget />
       </body>
     </html>
   );

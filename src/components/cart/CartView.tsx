@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShoppingCart, AlertTriangle, Send, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { formatPrice } from '@/lib/utils'; // Updated import
+import { formatPrice } from '@/lib/utils';
 import { WHATSAPP_NUMBER, STORE_NAME } from '@/lib/constants';
 import { useToast } from "@/hooks/use-toast"; 
 import { useEffect, useState } from 'react';
@@ -84,7 +84,7 @@ export default function CartView() {
     window.open(whatsappUrl, '_blank');
   };
 
-  if (!mounted || !isProductStoreInitialized) { // Also check product store initialization
+  if (!mounted || !isProductStoreInitialized) { 
     return (
       <Card className="w-full max-w-3xl mx-auto shadow-xl">
         <CardHeader>

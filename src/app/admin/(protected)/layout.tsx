@@ -7,7 +7,7 @@ import { useAdminAuthStore } from '@/store/adminAuthStore';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Package, LogOut, ShieldCheck, ShoppingBag, Menu } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 
@@ -40,8 +40,7 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
   }
 
   const handleLogout = () => {
-    logout();
-    router.push('/admin/login');
+    logout(); // This will set isAdminLoggedIn to false, triggering the useEffect above to redirect.
   };
 
   const navItems = [
@@ -99,10 +98,13 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
               <SheetHeader className="flex h-14 flex-row items-center border-b px-4 py-0 space-y-0 lg:h-[60px] lg:px-6">
                 <Link href="/admin/products" className="flex items-center gap-2 font-semibold text-primary">
                   <ShieldCheck className="h-6 w-6" />
+                  {/* SheetTitle now wraps the text content directly for accessibility */}
                   <SheetTitle className="text-lg"> {/* Inherits font-weight and color from Link */}
                     Painel Admin
                   </SheetTitle>
                 </Link>
+                 {/* Add a SheetDescription for accessibility if needed, or ensure title is descriptive enough */}
+                 {/* <SheetDescription className="sr-only">Admin navigation menu</SheetDescription> */}
               </SheetHeader>
               <ScrollArea className="flex-1">
                 <SidebarNav isMobile={true}/>
@@ -125,4 +127,3 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
     </div>
   );
 }
-

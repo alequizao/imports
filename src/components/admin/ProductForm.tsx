@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, UploadCloud } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
@@ -22,15 +22,17 @@ const productFormSchema = z.object({
   price: z.preprocess(
     (val) => {
       const sVal = String(val);
-      // Allow empty string for price input initially or if cleared
-      if (sVal.trim() === '') return undefined; // Will be caught by z.number() if required or default handled
+      if (sVal.trim() === '') return undefined;
       return parseFloat(sVal.replace(',', '.'));
     },
     z.number({invalid_type_error: "Preço deve ser um número."}).positive("Preço deve ser um número positivo.")
   ),
-  image: z.string().min(1, "URL da imagem é obrigatória.").url({ message: "URL da imagem inválida." }),
+  image: z.string()
+    .min(1, "A imagem do produto é obrigatória. Faça o upload de um arquivo.")
+    .refine(value => value.startsWith('data:image/') || value.startsWith('http://') || value.startsWith('https://'), {
+       message: "Formato de imagem inválido. Faça upload ou forneça uma URL válida.",
+    }),
   category: z.string().optional(),
-  dataAiHint: z.string().max(50, "Dica AI deve ter no máximo 50 caracteres.").optional(),
   color: z.string().optional(),
   size: z.string().optional(),
   model: z.string().optional(),
@@ -48,43 +50,67 @@ export default function ProductForm({ product }: ProductFormProps) {
   const addProduct = useProductAdminStore((state) => state.addProduct);
   const updateProduct = useProductAdminStore((state) => state.updateProduct);
   
-  const [imagePreview, setImagePreview] = useState<string>(product?.image || '');
-
-  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<ProductFormData>({
+  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
     defaultValues: product ? {
       ...product,
-      price: product.price, 
-      dataAiHint: product.dataAiHint || '',
+      price: product.price,
+      image: product.image || '', 
     } : {
       name: '',
       description: '',
-      price: undefined, // Use undefined to allow placeholder to show
-      image: '', // Will require user input for new products due to schema change
+      price: undefined, 
+      image: '', 
       category: '',
-      dataAiHint: '',
       color: '',
       size: '',
       model: '',
     },
   });
 
-  const imageUrl = watch('image');
+  const [imagePreview, setImagePreview] = useState<string>(product?.image || '');
+  const currentImageFieldValue = watch('image');
 
   useEffect(() => {
-    if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
-      setImagePreview(imageUrl);
+    if (currentImageFieldValue && (currentImageFieldValue.startsWith('data:image/') || currentImageFieldValue.startsWith('http'))) {
+      setImagePreview(currentImageFieldValue);
     } else {
-      setImagePreview(''); // Clear preview if URL is invalid or empty
+      setImagePreview('');
     }
-  }, [imageUrl]);
+  }, [currentImageFieldValue]);
 
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({ title: "Arquivo Inválido", description: "Por favor, selecione um arquivo de imagem (ex: JPG, PNG, WEBP).", variant: "destructive" });
+        event.target.value = ''; // Clear the file input
+        return;
+      }
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        toast({ title: "Arquivo Muito Grande", description: `O tamanho máximo da imagem é ${maxSize / (1024 * 1024)}MB.`, variant: "destructive" });
+        event.target.value = ''; // Clear the file input
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUri = reader.result as string;
+        setValue('image', dataUri, { shouldValidate: true, shouldDirty: true });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // File deselected
+      setValue('image', product?.image || '', { shouldValidate: true, shouldDirty: true });
+    }
+  };
 
   const onSubmit = (data: ProductFormData) => {
     try {
       const productDataForStore = {
         ...data,
-        price: Number(data.price), // Ensure price is number
+        price: Number(data.price),
       };
 
       if (product) {
@@ -95,7 +121,7 @@ export default function ProductForm({ product }: ProductFormProps) {
         toast({ title: "Produto Adicionado", description: `${data.name} foi adicionado com sucesso.` });
       }
       router.push('/admin/products');
-      router.refresh(); // Force refresh of the products page to show updated list
+      router.refresh(); 
     } catch (error) {
       console.error("Erro detalhado ao salvar o produto:", error);
       toast({ title: "Erro ao Salvar Produto", description: "Ocorreu um erro inesperado. Verifique o console para mais detalhes.", variant: "destructive" });
@@ -142,32 +168,54 @@ export default function ProductForm({ product }: ProductFormProps) {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             <div className="space-y-1.5">
-              <Label htmlFor="image">URL da Imagem</Label>
-              <Input id="image" {...register('image')} placeholder="https://exemplo.com/imagem.jpg" />
-              {errors.image && <p className="text-sm text-destructive">{errors.image.message}</p>}
+              <Label htmlFor="imageUpload">Imagem do Produto</Label>
+              <div className="flex items-center justify-center w-full">
+                  <label
+                      htmlFor="imageUpload"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-border border-dashed rounded-lg cursor-pointer bg-card hover:bg-muted/50 transition-colors"
+                  >
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
+                          <p className="mb-1 text-sm text-muted-foreground">
+                              <span className="font-semibold">Clique para enviar</span> ou arraste
+                          </p>
+                          <p className="text-xs text-muted-foreground">PNG, JPG, GIF, WEBP (MAX. 5MB)</p>
+                      </div>
+                      <Input id="imageUpload" type="file" className="hidden" accept="image/*" onChange={handleFileSelect} />
+                  </label>
+              </div>
+              {errors.image && <p className="text-sm text-destructive mt-1">{errors.image.message}</p>}
             </div>
-            {imagePreview && (
+            
+            {imagePreview ? (
               <div className="space-y-1.5">
-                <Label>Preview da Imagem</Label>
-                <div className="mt-2 border rounded-md p-2 flex justify-center items-center bg-muted/30">
+                <Label>Preview</Label>
+                <div className="mt-1 border rounded-md p-2 flex justify-center items-center bg-muted/10 aspect-square w-full max-w-[250px] min-h-[100px] mx-auto md:mx-0">
                    <Image
                       src={imagePreview}
                       alt="Preview do produto"
-                      width={120}
-                      height={120}
-                      className="rounded-md object-contain max-h-[120px]"
-                      onError={() => setImagePreview('')} // Clear preview on error
+                      width={230}
+                      height={230}
+                      className="rounded-md object-contain max-h-[230px]"
+                      onError={() => {
+                        setImagePreview(''); 
+                        if (currentImageFieldValue && !currentImageFieldValue.startsWith('data:image')) {
+                           setValue('image', '', { shouldValidate: true });
+                        }
+                        toast({ title: "Erro no Preview", description: "Não foi possível carregar o preview da imagem.", variant: "destructive"})
+                      }}
                     />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <Label>Preview</Label>
+                <div className="mt-1 border rounded-md p-2 flex justify-center items-center bg-muted/10 aspect-square w-full max-w-[250px] min-h-[100px] mx-auto md:mx-0 text-muted-foreground">
+                  Nenhuma imagem selecionada
                 </div>
               </div>
             )}
           </div>
-          <div className="space-y-1.5">
-              <Label htmlFor="dataAiHint">Dica para Imagem (busca no Picsum, 1-2 palavras)</Label>
-              <Input id="dataAiHint" {...register('dataAiHint')} placeholder="Ex: perfume bottle" />
-              {errors.dataAiHint && <p className="text-sm text-destructive">{errors.dataAiHint.message}</p>}
-          </div>
-
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-1.5">

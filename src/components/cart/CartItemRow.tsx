@@ -25,12 +25,11 @@ export default function CartItemRow({ item }: CartItemRowProps) {
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b hover:bg-muted/50 transition-colors rounded-lg">
       <div className="flex items-center gap-4 w-full sm:w-2/5">
         <Image
-          src={item.image}
+          src={item.image} // This will be a Data URI or URL
           alt={item.name}
           width={80}
           height={80}
           className="rounded-md object-cover"
-          data-ai-hint={item.dataAiHint || "product image"}
         />
         <div>
           <Link href={`/#${item.id}`} className="text-lg font-semibold text-primary hover:underline truncate" title={item.name}>

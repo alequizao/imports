@@ -3,9 +3,8 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  image: string;
-  category?: string; // Optional category
-  dataAiHint?: string; // For placeholder image search keywords
+  image: string; // Can be a URL or a Data URI
+  category?: string; 
   color?: string;
   size?: string;
   model?: string;

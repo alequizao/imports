@@ -34,7 +34,7 @@ export default function AdminProductsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    setMounted(true); // Ensure store is hydrated and ready on client
+    setMounted(true); 
   }, []);
 
   const filteredProducts = useMemo(() => {
@@ -46,7 +46,7 @@ export default function AdminProductsPage() {
       (product.model && product.model.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (product.color && product.color.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (product.size && product.size.toLowerCase().includes(searchTerm.toLowerCase()))
-    ).sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically by name
+    ).sort((a, b) => a.name.localeCompare(b.name)); 
   }, [allProducts, searchTerm, mounted]);
 
   const handleDeleteProduct = (productId: string, productName: string) => {
@@ -130,8 +130,7 @@ export default function AdminProductsPage() {
                         width={50}
                         height={50}
                         className="rounded-md object-cover aspect-square bg-muted"
-                        data-ai-hint={product.dataAiHint || "product admin"}
-                        onError={(e) => e.currentTarget.src = 'https://picsum.photos/seed/placeholder/50/50'} // Fallback
+                        onError={(e) => e.currentTarget.src = `https://picsum.photos/seed/${product.id}/50/50`} // Fallback for broken images
                       />
                     </TableCell>
                     <TableCell className="font-medium max-w-[150px] sm:max-w-[250px] truncate" title={product.name}>
@@ -187,4 +186,3 @@ export default function AdminProductsPage() {
     </Card>
   );
 }
-

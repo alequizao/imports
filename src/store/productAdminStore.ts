@@ -2,7 +2,6 @@
 import {create} from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Product } from '@/lib/types';
-// import { initialSeedProducts } from '@/data/products'; // No longer used for initial state
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -15,28 +14,24 @@ interface ProductAdminState {
   setProducts: (products: Product[]) => void; 
 }
 
-// Helper to ensure all products have new fields, even if loaded from old data structure
-// Also ensures ID exists.
 const ensureProductFields = (product: any, existingId?: string): Product => ({
-  id: existingId || product.id || uuidv4(), // Use existing ID if updating, else product.id, else generate
+  id: existingId || product.id || uuidv4(),
   name: product.name || '',
   description: product.description || '',
   price: typeof product.price === 'number' ? product.price : 0,
-  image: product.image || `https://picsum.photos/seed/${uuidv4()}/400/300`, // default placeholder with random seed
+  image: product.image || '', // Image can be a Data URI or URL
   category: product.category,
-  dataAiHint: product.dataAiHint,
   color: product.color,
   size: product.size,
   model: product.model,
 });
 
-// const hydratedInitialProducts = initialSeedProducts.map(p => ensureProductFields(p));
-const hydratedInitialProducts: Product[] = []; // Initialize with an empty array
+const hydratedInitialProducts: Product[] = [];
 
 export const useProductAdminStore = create(
   persist<ProductAdminState>(
     (set, get) => ({
-      products: hydratedInitialProducts, // Initialize with empty array as default
+      products: hydratedInitialProducts,
       addProduct: (productData) => {
         const newProduct: Product = ensureProductFields(productData);
         set((state) => ({ products: [...state.products, newProduct] }));
@@ -61,15 +56,16 @@ export const useProductAdminStore = create(
       }
     }),
     {
-      name: 'vsimports-product-storage', // Name for localStorage key
-      storage: createJSONStorage(() => localStorage), // Specify localStorage
-      partialize: (state) => ({ products: state.products }), // Only persist the products array
-      // The initial state (products: hydratedInitialProducts) provided to create()
-      // will be used if localStorage is empty. Otherwise, localStorage data takes precedence.
+      name: 'vsimports-product-storage', 
+      storage: createJSONStorage(() => localStorage), 
+      partialize: (state) => ({ products: state.products.map(p => ensureProductFields(p)) }), // Ensure fields on hydration
+      // On rehydration, ensure all products have the correct fields.
+      // This is important if the Product type changes over time.
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.products = state.products.map(p => ensureProductFields(p));
+        }
+      }
     }
   )
 );
-
-// Note: Product changes in this store are now persisted to localStorage.
-// The `banco.sql` file serves as a reference for initial data structure or for a potential future backend.
-// The application currently uses an empty array to initialize the store if localStorage is empty.

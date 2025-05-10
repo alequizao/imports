@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from 'next/image';
@@ -25,11 +24,10 @@ export default function ProductCard({ product }: ProductCardProps) {
       <CardHeader className="p-0">
         <div className="aspect-[4/3] relative w-full">
           <Image
-            src={product.image}
+            src={product.image} // This will be a Data URI or URL
             alt={product.name}
             layout="fill"
             objectFit="cover"
-            data-ai-hint={product.dataAiHint || "product image"}
           />
         </div>
       </CardHeader>

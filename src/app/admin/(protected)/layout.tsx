@@ -1,3 +1,4 @@
+
 "use client";
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
@@ -6,7 +7,7 @@ import { useAdminAuthStore } from '@/store/adminAuthStore';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Package, LogOut, ShieldCheck, ShoppingBag, Menu } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 
@@ -95,12 +96,14 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0">
-              <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+              <SheetHeader className="flex h-14 flex-row items-center border-b px-4 py-0 space-y-0 lg:h-[60px] lg:px-6">
                 <Link href="/admin/products" className="flex items-center gap-2 font-semibold text-primary">
                   <ShieldCheck className="h-6 w-6" />
-                  <span className="">Painel Admin</span>
+                  <SheetTitle className="text-lg"> {/* Inherits font-weight and color from Link */}
+                    Painel Admin
+                  </SheetTitle>
                 </Link>
-              </div>
+              </SheetHeader>
               <ScrollArea className="flex-1">
                 <SidebarNav isMobile={true}/>
               </ScrollArea>
@@ -122,3 +125,4 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
     </div>
   );
 }
+

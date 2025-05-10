@@ -2,12 +2,12 @@
 "use client";
 
 import Link from 'next/link';
-import { Package, ShoppingCart, UserCog, Heart, User, LogIn, LogOut } from 'lucide-react';
+import { Package, ShoppingCart, UserCog, Heart, User, LogIn, LogOut, Newspaper, Menu } from 'lucide-react'; // Added Newspaper
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
-import { useAuthStore } from '@/store/authStore'; // Import auth store
+import { useAuthStore } from '@/store/authStore';
 import Logo from './Logo'; 
 import { useEffect, useState } from 'react';
 import {
@@ -18,19 +18,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose
+} from "@/components/ui/sheet";
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton
 
 export default function Header() {
   const totalCartItems = useCartStore((state) => state.getTotalItems());
   const totalWishlistItems = useWishlistStore((state) => state.getTotalItems());
   
-  // Auth store
-  const { isLoggedIn, currentUser, logout, isInitialized: authInitialized } = useAuthStore((state) => ({
-    isLoggedIn: state.isLoggedIn,
-    currentUser: state.currentUser,
-    logout: state.logout,
-    isInitialized: state.isInitialized,
-  }));
+  const { isLoggedIn, currentUser, logout, isInitialized: authInitialized, isLoading: authLoading } = useAuthStore();
   
   const [mounted, setMounted] = useState(false);
   const { toast } = useToast();
@@ -45,21 +46,39 @@ export default function Header() {
   const handleLogout = () => {
     logout();
     toast({ title: "Logout Efetuado", description: "Você saiu da sua conta." });
-    // router.push('/'); // Optionally redirect after logout
   };
 
-  const AuthNav = () => {
-    if (!mounted || !authInitialized) {
-        return <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground animate-pulse"><User size={22}/></Button>;
+  const commonNavLinks = (isMobile = false) => (
+    <>
+      <Link href="/" passHref>
+        <Button variant="ghost" asChild={isMobile} className={`w-full justify-start ${!isMobile && 'text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground'} px-2 sm:px-4 text-sm sm:text-base`}>
+          <SheetClose asChild={isMobile}><Link href="/">Catálogo</Link></SheetClose>
+        </Button>
+      </Link>
+      <Link href="/blog" passHref>
+        <Button variant="ghost" asChild={isMobile} className={`w-full justify-start ${!isMobile && 'text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground'} px-2 sm:px-4 text-sm sm:text-base`}>
+           <SheetClose asChild={isMobile}><Link href="/blog"><Newspaper size={20} className="mr-2 sm:hidden" />Blog</Link></SheetClose>
+        </Button>
+      </Link>
+    </>
+  );
+
+  const AuthNav = ({ isMobile = false }: { isMobile?: boolean }) => {
+    if (!mounted || !authInitialized || authLoading) {
+        return isMobile ? (
+            <Skeleton className="h-10 w-full rounded-md my-1" />
+        ) : (
+            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground animate-pulse"><User size={22}/></Button>
+        );
     }
 
     if (isLoggedIn && currentUser) {
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground px-2 sm:px-3">
-              <User size={22} />
-              <span className="sr-only">Minha Conta</span>
+            <Button variant="ghost" className={`relative ${isMobile ? 'w-full justify-start px-2 py-2 h-auto text-base' : 'text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground px-2 sm:px-3'}`}>
+              <User size={isMobile ? 20 : 22} className="mr-2" />
+              {isMobile ? currentUser.name || 'Minha Conta' : <span className="sr-only">Minha Conta</span>}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
@@ -72,29 +91,32 @@ export default function Header() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <Link href="/account" passHref>
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                Minha Conta
-              </DropdownMenuItem>
-            </Link>
-             {/* Add more items like Order History later */}
+            <SheetClose asChild>
+              <Link href="/account" passHref>
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" /> Minha Conta
+                </DropdownMenuItem>
+              </Link>
+            </SheetClose>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-              <LogOut className="mr-2 h-4 w-4" />
-              Sair
-            </DropdownMenuItem>
+             <SheetClose asChild>
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                <LogOut className="mr-2 h-4 w-4" /> Sair
+                </DropdownMenuItem>
+            </SheetClose>
           </DropdownMenuContent>
         </DropdownMenu>
       );
     } else {
       return (
-        <Link href="/login" passHref>
-          <Button variant="ghost" className="text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground px-2 sm:px-3">
-            <LogIn size={22} className="mr-0 sm:mr-2" />
-            <span className="hidden sm:inline">Login</span>
-          </Button>
-        </Link>
+        <SheetClose asChild={isMobile}>
+          <Link href="/login" passHref>
+            <Button variant="ghost" className={`${isMobile ? 'w-full justify-start px-2 py-2 h-auto text-base' : 'text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground px-2 sm:px-3'}`}>
+              <LogIn size={isMobile ? 20 : 22} className="mr-2" />
+              Login / Registrar
+            </Button>
+          </Link>
+        </SheetClose>
       );
     }
   };
@@ -107,12 +129,10 @@ export default function Header() {
           <Package size={32} />
           <Logo className="h-8 w-auto" /> 
         </Link>
-        <nav className="flex items-center gap-1 sm:gap-2 md:gap-3">
-          <Link href="/" passHref>
-            <Button variant="ghost" className="text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground px-2 sm:px-4 text-sm sm:text-base">
-              Catálogo
-            </Button>
-          </Link>
+        
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-1 sm:gap-2 md:gap-3">
+          {commonNavLinks()}
           <Link href="/wishlist" passHref>
             <Button variant="ghost" className="relative text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground px-2 sm:px-3">
               <Heart size={22} />
@@ -135,9 +155,7 @@ export default function Header() {
               <span className="sr-only">Carrinho de Compras</span>
             </Button>
           </Link>
-          
           <AuthNav />
-
           <Link href="/admin/login" passHref>
             <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground" aria-label="Painel Administrativo">
               <UserCog size={22} />
@@ -145,6 +163,55 @@ export default function Header() {
             </Button>
           </Link>
         </nav>
+
+        {/* Mobile Navigation Trigger */}
+        <div className="md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80">
+                <Menu size={24} />
+                <span className="sr-only">Abrir menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[280px] p-4">
+              <nav className="flex flex-col gap-3 mt-6">
+                {commonNavLinks(true)}
+                <SheetClose asChild>
+                  <Link href="/wishlist" passHref>
+                    <Button variant="ghost" className="w-full justify-start px-2 py-2 h-auto text-base relative">
+                      <Heart size={20} className="mr-2" /> Lista de Desejos
+                      {displayTotalWishlistItems > 0 && (
+                        <Badge variant="destructive" className="absolute top-1 right-2 bg-accent text-accent-foreground px-1.5 py-0.5 text-xs">
+                          {displayTotalWishlistItems}
+                        </Badge>
+                      )}
+                    </Button>
+                  </Link>
+                </SheetClose>
+                <SheetClose asChild>
+                  <Link href="/cart" passHref>
+                    <Button variant="ghost" className="w-full justify-start px-2 py-2 h-auto text-base relative">
+                      <ShoppingCart size={20} className="mr-2" /> Carrinho
+                      {displayTotalCartItems > 0 && (
+                        <Badge variant="destructive" className="absolute top-1 right-2 bg-accent text-accent-foreground px-1.5 py-0.5 text-xs">
+                          {displayTotalCartItems}
+                        </Badge>
+                      )}
+                    </Button>
+                  </Link>
+                </SheetClose>
+                <AuthNav isMobile={true} />
+                <SheetClose asChild>
+                  <Link href="/admin/login" passHref>
+                    <Button variant="ghost" className="w-full justify-start px-2 py-2 h-auto text-base">
+                      <UserCog size={20} className="mr-2" /> Painel Admin
+                    </Button>
+                  </Link>
+                </SheetClose>
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   );

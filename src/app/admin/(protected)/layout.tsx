@@ -1,3 +1,4 @@
+
 "use client";
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
@@ -5,9 +6,10 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useAdminAuthStore } from '@/store/adminAuthStore';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Package, LogOut, ShieldCheck, ShoppingBag, Menu, LayoutDashboard, Receipt } from 'lucide-react'; // Added Receipt
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet"; // Removed SheetHeader
+import { Package, LogOut, ShieldCheck, ShoppingBag, Menu, LayoutDashboard, Receipt } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 export default function AdminProtectedLayout({ children }: { children: ReactNode }) {
@@ -60,8 +62,7 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
             onClick={() => {
               if (isMobile) {
                 // Attempt to close the sheet by simulating a click on its trigger
-                // This is a common workaround; ensure your trigger has a unique identifier if needed.
-                const trigger = document.querySelector('button[data-radix-sheet-trigger]');
+                const trigger = document.querySelector('button[data-radix-sheet-trigger="true"]');
                 if (trigger instanceof HTMLElement) trigger.click();
               }
             }}
@@ -83,7 +84,6 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
               <ShieldCheck className="h-6 w-6" />
               <span className="">Painel Admin</span>
             </Link>
-            {/* Title for SR, not visible. The actual title is part of the content. */}
             <h1 className="sr-only">Navegação Principal do Admin</h1>
           </div>
           <ScrollArea className="flex-1">
@@ -99,21 +99,20 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
       <div className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30 md:hidden">
           <Sheet>
-            <SheetTrigger asChild data-radix-sheet-trigger>
+            <SheetTrigger asChild data-radix-sheet-trigger="true">
               <Button variant="outline" size="icon" className="shrink-0">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Abrir menu de navegação</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0">
-              {/* Replaced SheetHeader with a div and made SheetDescription a direct child of SheetContent for ARIA */}
-              <div className="flex h-14 flex-row items-center border-b px-4 lg:h-[60px] lg:px-6">
+               <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
                 <SheetTitle className="text-lg font-semibold text-primary flex items-center gap-2">
                     <ShieldCheck className="h-6 w-6" />
                     Painel Admin
                 </SheetTitle>
+                 <SheetDescription className="sr-only">Menu de navegação do administrador.</SheetDescription>
               </div>
-              <SheetDescription className="sr-only">Admin navigation menu</SheetDescription>
               <ScrollArea className="flex-1">
                 <SidebarNav isMobile={true}/>
               </ScrollArea>

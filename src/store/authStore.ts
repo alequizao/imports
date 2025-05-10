@@ -2,23 +2,25 @@
 "use client";
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { User } from '@/lib/types'; // Assuming User type is defined
-import { useToast } from '@/hooks/use-toast'; // For user feedback
+import type { User } from '@/lib/types';
+import { v4 as uuidv4 } from 'uuid';
 
 interface AuthState {
   currentUser: User | null;
   isLoggedIn: boolean;
-  isLoading: boolean; // To manage loading state during auth operations
-  login: (email: string, passwordAttempt: string) => Promise<boolean>; // Simulate async
+  isLoading: boolean;
+  isInitialized: boolean; // To track if rehydration is complete
+  login: (email: string, passwordAttempt: string) => Promise<boolean>;
   logout: () => void;
-  register: (name: string, email: string, passwordAttempt: string) => Promise<boolean>; // Simulate async
-  isInitialized: boolean;
+  register: (name: string, email: string, passwordAttempt: string) => Promise<boolean>;
+  users: User[]; // Keep track of registered users for this mock
+  initializeUsers: () => void; // To load users from localStorage if they exist
 }
 
 // IMPORTANT: This is a MOCK authentication store for UI development.
 // DO NOT use this for production. Passwords should be hashed and verified on a backend.
-const MOCK_USERS: User[] = [
-    { id: 'user-123', email: 'user@example.com', name: 'Usuário Exemplo', passwordHash: 'hashedpassword123' }, // Store HASHED passwords
+const initialMockUsers: User[] = [
+    { id: 'user-123', email: 'user@example.com', name: 'Usuário Exemplo', passwordHash: 'hashedpassword123' },
 ];
 
 
@@ -29,46 +31,55 @@ export const useAuthStore = create(
       isLoggedIn: false,
       isLoading: false,
       isInitialized: false,
+      users: initialMockUsers, // Start with initial mock users
+
+      initializeUsers: () => {
+        // This function is called by onRehydrateStorage to ensure users are loaded
+        // No explicit action needed here if 'users' is part of persisted state
+        // and correctly merged.
+      },
 
       login: async (email, passwordAttempt) => {
         set({ isLoading: true });
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 700)); // Simulate API call
 
-        // In a real app, you'd send email/password to a backend for verification.
-        // The backend would check against a database of hashed passwords.
-        const user = MOCK_USERS.find(u => u.email === email);
+        const user = get().users.find(u => u.email === email);
         // For this mock, we're not actually checking the password. A real app MUST.
         if (user /* && await bcrypt.compare(passwordAttempt, user.passwordHash) */) {
           set({ currentUser: {id: user.id, email: user.email, name: user.name }, isLoggedIn: true, isLoading: false });
-          // toast({ title: 'Login Bem-sucedido!', description: `Bem-vindo de volta, ${user.name || user.email}!`});
           return true;
         } else {
           set({ isLoading: false });
-          // toast({ title: 'Erro de Login', description: 'E-mail ou senha inválidos.', variant: 'destructive' });
           return false;
         }
       },
 
       logout: () => {
         set({ currentUser: null, isLoggedIn: false, isLoading: false });
-        // toast({ title: 'Logout Efetuado', description: 'Você saiu da sua conta.' });
       },
 
       register: async (name, email, passwordAttempt) => {
         set({ isLoading: true });
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 700));
 
-        if (MOCK_USERS.some(u => u.email === email)) {
+        if (get().users.some(u => u.email === email)) {
           set({ isLoading: false });
-          // toast({ title: 'Erro de Registro', description: 'Este e-mail já está em uso.', variant: 'destructive' });
-          return false;
+          return false; // Email already exists
         }
-        // In a real app, hash the password before storing: const passwordHash = await bcrypt.hash(passwordAttempt, 10);
-        const newUser: User = { id: `user-${Date.now()}`, email, name, passwordHash: `hashed-${passwordAttempt}` };
-        MOCK_USERS.push(newUser); // Add to mock users list
-        set({ currentUser: {id: newUser.id, email: newUser.email, name: newUser.name}, isLoggedIn: true, isLoading: false });
-        // toast({ title: 'Registro Concluído!', description: `Bem-vindo, ${name}!` });
+        
+        const newUser: User = { 
+          id: uuidv4(), 
+          email, 
+          name, 
+          passwordHash: `hashed-${passwordAttempt}` // Mock hashing
+        };
+        
+        set(state => ({ 
+          users: [...state.users, newUser],
+          currentUser: {id: newUser.id, email: newUser.email, name: newUser.name}, 
+          isLoggedIn: true, 
+          isLoading: false 
+        }));
         return true;
       },
     }),
@@ -78,17 +89,32 @@ export const useAuthStore = create(
       partialize: (state) => ({ // Only persist these fields
         currentUser: state.currentUser,
         isLoggedIn: state.isLoggedIn,
+        users: state.users, // Persist the users list
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
-            state.isInitialized = true;
+          state.isInitialized = true;
+          state.initializeUsers(); // Ensure users are loaded
         }
-      }
+      },
+      // Merge state from localStorage with initial state
+      merge: (persistedState, currentState) => {
+        const mergedUsers = (persistedState as AuthState)?.users?.length 
+          ? (persistedState as AuthState).users 
+          : initialMockUsers;
+        
+        return {
+          ...currentState,
+          ...(persistedState as object), // Type assertion
+          users: mergedUsers,
+          isInitialized: true,
+        };
+      },
     }
   )
 );
 
-// Trigger rehydration
+// Initialize store on client load
 if (typeof window !== 'undefined') {
-  useAuthStore.getState();
+  useAuthStore.getState().isInitialized; // Access isInitialized to trigger rehydration
 }

@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Edit, PackageSearch, AlertCircle } from 'lucide-react';
+import { PackageSearch, Eye, Edit3, AlertTriangle } from 'lucide-react'; // Changed Edit to Edit3, AlertCircle to AlertTriangle
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -23,6 +23,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Input } from '@/components/ui/input';
+
+type OrderStatus = Order['status'];
+const orderStatuses: OrderStatus[] = ['Pendente', 'Processando', 'Enviado', 'Entregue', 'Cancelado'];
+
 
 export default function AdminOrdersPage() {
   const { orders: allOrders, updateOrderStatus, isInitialized } = useOrderStore((state) => ({
@@ -32,18 +37,36 @@ export default function AdminOrdersPage() {
   }));
   const [mounted, setMounted] = useState(false);
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<OrderStatus | 'all'>('all');
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Sort orders by date, newest first
-  const sortedOrders = useMemo(() => {
+  const filteredAndSortedOrders = useMemo(() => {
     if (!isInitialized || !mounted) return [];
-    return [...allOrders].sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
-  }, [allOrders, isInitialized, mounted]);
+    
+    let filtered = [...allOrders];
 
-  const handleStatusChange = (orderId: string, newStatus: Order['status']) => {
+    if (filterStatus !== 'all') {
+      filtered = filtered.filter(order => order.status === filterStatus);
+    }
+
+    if (searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      filtered = filtered.filter(order => 
+        order.id.toLowerCase().includes(lowerSearchTerm) ||
+        order.customerName.toLowerCase().includes(lowerSearchTerm) ||
+        order.customerEmail.toLowerCase().includes(lowerSearchTerm) ||
+        order.items.some(item => item.productName.toLowerCase().includes(lowerSearchTerm))
+      );
+    }
+    
+    return filtered.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
+  }, [allOrders, isInitialized, mounted, searchTerm, filterStatus]);
+
+  const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
     updateOrderStatus(orderId, newStatus);
     toast({
       title: "Status do Pedido Atualizado",
@@ -51,25 +74,26 @@ export default function AdminOrdersPage() {
     });
   };
   
-  const getStatusVariant = (status: Order['status']): "default" | "secondary" | "destructive" | "outline" => {
+  const getStatusVariant = (status: OrderStatus): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
-      case 'Pendente': return 'default'; // Primary-like
+      case 'Pendente': return 'default'; 
       case 'Processando': return 'secondary';
-      case 'Enviado': return 'outline'; // Visually distinct
-      case 'Entregue': return 'default'; // Accent-like or another primary
+      case 'Enviado': return 'outline'; 
+      case 'Entregue': return 'default'; 
       case 'Cancelado': return 'destructive';
       default: return 'outline';
     }
   };
   
-  const getStatusColor = (status: Order['status']): string => {
+  const getStatusColorClass = (status: OrderStatus): string => {
+    // Using Tailwind classes that leverage theme colors
     switch (status) {
-        case 'Pendente': return 'bg-yellow-500 hover:bg-yellow-600';
-        case 'Processando': return 'bg-blue-500 hover:bg-blue-600';
-        case 'Enviado': return 'bg-green-500 hover:bg-green-600 text-white';
-        case 'Entregue': return 'bg-teal-500 hover:bg-teal-600';
-        case 'Cancelado': return 'bg-red-600 hover:bg-red-700';
-        default: return 'bg-gray-500 hover:bg-gray-600';
+        case 'Pendente': return 'bg-yellow-500 text-yellow-foreground hover:bg-yellow-500/90'; // Example direct color
+        case 'Processando': return 'bg-blue-500 text-blue-foreground hover:bg-blue-500/90'; // Example direct color
+        case 'Enviado': return 'bg-green-600 text-primary-foreground hover:bg-green-600/90';
+        case 'Entregue': return 'bg-teal-600 text-primary-foreground hover:bg-teal-600/90';
+        case 'Cancelado': return 'bg-destructive text-destructive-foreground hover:bg-destructive/90';
+        default: return 'bg-muted text-muted-foreground hover:bg-muted/80';
     }
   };
 
@@ -82,6 +106,10 @@ export default function AdminOrdersPage() {
           <Skeleton className="h-4 w-64 rounded" />
         </CardHeader>
         <CardContent>
+            <div className="flex justify-between items-center mb-4 gap-4">
+                <Skeleton className="h-10 w-1/2 rounded-md" />
+                <Skeleton className="h-10 w-1/4 rounded-md" />
+            </div>
           <div className="overflow-x-auto border rounded-lg">
             <Table>
               <TableHeader>
@@ -94,7 +122,7 @@ export default function AdminOrdersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {[...Array(3)].map((_, index) => (
+                {[...Array(5)].map((_, index) => (
                   <TableRow key={index}>
                     {[...Array(6)].map((_, cellIndex) => (
                       <TableCell key={cellIndex}>
@@ -115,79 +143,105 @@ export default function AdminOrdersPage() {
     <Card className="shadow-xl w-full">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-primary">Gerenciar Pedidos</CardTitle>
-        <CardDescription>Visualize e atualize o status dos pedidos dos clientes. ({sortedOrders.length} pedidos)</CardDescription>
+        <CardDescription>Visualize e atualize o status dos pedidos. ({filteredAndSortedOrders.length} de {allOrders.length} pedidos)</CardDescription>
       </CardHeader>
       <CardContent>
-        {sortedOrders.length === 0 ? (
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+            <Input 
+                type="search"
+                placeholder="Buscar por ID, cliente, email, produto..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="max-w-sm"
+            />
+            <Select
+                value={filterStatus}
+                onValueChange={(value) => setFilterStatus(value as OrderStatus | 'all')}
+            >
+                <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Filtrar por status" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">Todos os Status</SelectItem>
+                    {orderStatuses.map(status => (
+                        <SelectItem key={status} value={status}>{status}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
+
+        {filteredAndSortedOrders.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground border border-dashed rounded-lg">
             <PackageSearch size={48} className="mx-auto mb-4 text-primary/50" />
             <p className="text-xl font-semibold">Nenhum pedido encontrado.</p>
-            <p className="mt-2">Ainda não há pedidos registrados no sistema.</p>
+            <p className="mt-2">
+              {searchTerm || filterStatus !== 'all' 
+                ? "Tente ajustar seus filtros ou termos de busca."
+                : "Ainda não há pedidos registrados no sistema."}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto border rounded-lg">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="hidden sm:table-cell">ID do Pedido</TableHead>
+                  <TableHead className="hidden sm:table-cell w-[100px]">ID do Pedido</TableHead>
                   <TableHead>Cliente</TableHead>
-                  <TableHead>Data</TableHead>
+                  <TableHead className="hidden md:table-cell">Data</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedOrders.map((order) => (
+                {filteredAndSortedOrders.map((order) => (
                   <TableRow key={order.id} className="hover:bg-muted/50">
                     <TableCell className="font-mono text-xs hidden sm:table-cell" title={order.id}>{order.id.substring(0, 8)}...</TableCell>
                     <TableCell>
-                        {order.customerName}
-                        <div className="sm:hidden text-xs text-muted-foreground font-mono" title={order.id}>{order.id.substring(0,8)}...</div>
+                        <div className="font-medium">{order.customerName}</div>
+                        <div className="text-xs text-muted-foreground">{order.customerEmail}</div>
+                        <div className="sm:hidden text-xs text-muted-foreground font-mono" title={order.id}>ID: {order.id.substring(0,8)}...</div>
                     </TableCell>
-                    <TableCell>{new Date(order.orderDate).toLocaleDateString('pt-BR')}</TableCell>
+                    <TableCell className="hidden md:table-cell">{new Date(order.orderDate).toLocaleDateString('pt-BR')}</TableCell>
                     <TableCell>{formatPrice(order.totalAmount)}</TableCell>
                     <TableCell>
-                       <Badge variant={getStatusVariant(order.status)} className={`${getStatusColor(order.status)} text-white`}>
+                       <Badge className={`${getStatusColorClass(order.status)} text-xs`}>
                         {order.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right space-x-2">
+                    <TableCell className="text-right space-x-1">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                           <Button variant="outline" size="sm">Alterar Status</Button>
+                           <Button variant="outline" size="sm" className="text-xs px-2 h-8">Alterar Status</Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Alterar Status do Pedido</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Selecione o novo status para o pedido de {order.customerName} ({order.id.substring(0,8)}...).
+                                    Selecione o novo status para o pedido de {order.customerName} (#{order.id.substring(0,8)}...).
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <Select
                                 defaultValue={order.status}
-                                onValueChange={(newStatus: Order['status']) => handleStatusChange(order.id, newStatus)}
+                                onValueChange={(newStatus: OrderStatus) => handleStatusChange(order.id, newStatus)}
                             >
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Selecione um status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {(['Pendente', 'Processando', 'Enviado', 'Entregue', 'Cancelado'] as Order['status'][]).map(s => (
+                                    {orderStatuses.map(s => (
                                         <SelectItem key={s} value={s}>{s}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                             <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                {/* Action is handled by onValueChange, but a visual confirm could be added if needed */}
-                                {/* <AlertDialogAction>Salvar</AlertDialogAction> */}
+                                <AlertDialogCancel>Fechar</AlertDialogCancel>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
-                       {/* Placeholder for View Details Button - to be implemented later */}
-                       {/* 
-                        <Button variant="ghost" size="icon" title="Ver Detalhes (Em breve)">
-                            <Eye size={18} />
+                       {/* Placeholder for View Details Button 
+                        <Button variant="ghost" size="icon" title="Ver Detalhes do Pedido (Em breve)">
+                            <Eye size={16} />
                         </Button> 
                        */}
                     </TableCell>

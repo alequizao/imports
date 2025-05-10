@@ -3,23 +3,25 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
-import { useOrderStore } from '@/store/orderStore'; // To show user's orders
+import { useOrderStore } from '@/store/orderStore';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, ShoppingBag, LogOut, MapPin, Edit3, ListOrdered } from 'lucide-react';
+import { User, ShoppingBag, LogOut, MapPin, Edit3, ListOrdered, PackageSearch } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatPrice } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import type { Order } from '@/lib/types';
 
 export default function AccountPage() {
   const { currentUser, isLoggedIn, logout, isLoading: authLoading, isInitialized: authInitialized } = useAuthStore();
-  const { orders, isInitialized: ordersInitialized } = useOrderStore();
+  const { getOrdersByUserId, isInitialized: ordersInitialized } = useOrderStore();
   const router = useRouter();
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
+  const [userOrders, setUserOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -32,16 +34,44 @@ export default function AccountPage() {
     }
   }, [isLoggedIn, authLoading, authInitialized, router, mounted, toast]);
 
+  useEffect(() => {
+    if (mounted && ordersInitialized && currentUser && isLoggedIn) {
+      const orders = getOrdersByUserId(currentUser.id);
+      setUserOrders(orders.sort((a,b) => new Date(b.orderDate).getTime() - new Date(a.date).getTime()));
+    }
+  }, [mounted, ordersInitialized, currentUser, isLoggedIn, getOrdersByUserId]);
+
+
   const handleLogout = () => {
     logout();
     toast({ title: "Logout Efetuado", description: "Você saiu da sua conta." });
     router.push('/'); 
   };
+  
+  const getStatusVariant = (status: Order['status']): "default" | "secondary" | "destructive" | "outline" => {
+    switch (status) {
+      case 'Pendente': return 'default'; 
+      case 'Processando': return 'secondary';
+      case 'Enviado': return 'outline'; 
+      case 'Entregue': return 'default'; 
+      case 'Cancelado': return 'destructive';
+      default: return 'outline';
+    }
+  };
 
-  // Filter orders for the current user (mocking with email for now)
-  const userOrders = orders.filter(order => order.customerEmail === currentUser?.email);
+   const getStatusColorClass = (status: Order['status']): string => {
+    switch (status) {
+        case 'Pendente': return 'bg-yellow-500 text-yellow-foreground hover:bg-yellow-500/90';
+        case 'Processando': return 'bg-blue-500 text-blue-foreground hover:bg-blue-500/90';
+        case 'Enviado': return 'bg-green-600 text-primary-foreground hover:bg-green-600/90';
+        case 'Entregue': return 'bg-teal-600 text-primary-foreground hover:bg-teal-600/90';
+        case 'Cancelado': return 'bg-destructive text-destructive-foreground hover:bg-destructive/90';
+        default: return 'bg-muted text-muted-foreground hover:bg-muted/80';
+    }
+  };
 
-  if (!mounted || !authInitialized || authLoading || !isLoggedIn || !currentUser) {
+
+  if (!mounted || !authInitialized || authLoading || !currentUser || !isLoggedIn) {
     return (
       <div className="container mx-auto py-12 px-4">
         <Card className="w-full max-w-3xl mx-auto">
@@ -62,6 +92,7 @@ export default function AccountPage() {
             <Separator />
              <Skeleton className="h-7 w-40 mt-4 mb-2 rounded" />
              <Skeleton className="h-20 w-full rounded-md" />
+             <Skeleton className="h-20 w-full rounded-md mt-4" />
           </CardContent>
         </Card>
       </div>
@@ -90,57 +121,53 @@ export default function AccountPage() {
             <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
               <p><strong>Nome:</strong> {currentUser.name || 'Não informado'}</p>
               <p><strong>Email:</strong> {currentUser.email}</p>
-              {/* Placeholder for editing details */}
-              {/* <Button variant="outline" size="sm"><Edit3 size={16} className="mr-2" /> Editar Dados</Button> */}
             </div>
           </section>
-
-          {/* Placeholder for Address Management - To be implemented later */}
-          {/* 
-          <section>
-            <h2 className="text-xl font-semibold text-secondary mb-3">Meus Endereços</h2>
-            <div className="p-4 border rounded-lg bg-muted/30">
-              <p className="text-muted-foreground">Você ainda não cadastrou endereços.</p>
-              <Button variant="outline" size="sm" className="mt-2"><MapPin size={16} className="mr-2" /> Adicionar Endereço</Button>
-            </div>
-          </section> 
-          */}
 
           <section>
             <h2 className="text-xl font-semibold text-secondary mb-3 flex items-center gap-2">
                 <ListOrdered /> Histórico de Pedidos
             </h2>
-            {ordersInitialized && userOrders.length > 0 ? (
+            {!ordersInitialized ? (
+                <div className="space-y-4">
+                    {[...Array(2)].map((_, i) => (
+                        <Skeleton key={i} className="h-24 w-full rounded-md" />
+                    ))}
+                </div>
+            ) : userOrders.length > 0 ? (
               <div className="space-y-4">
-                {userOrders.slice(0, 5).map(order => ( // Show latest 5 orders, for example
+                {userOrders.slice(0, 5).map(order => (
                   <Card key={order.id} className="bg-card hover:shadow-md transition-shadow">
-                    <CardHeader className="flex flex-row justify-between items-center p-4">
+                    <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 gap-2">
                       <div>
                         <CardTitle className="text-md font-semibold">Pedido #{order.id.substring(0, 8)}...</CardTitle>
                         <CardDescription className="text-xs">
                           Data: {new Date(order.orderDate).toLocaleDateString('pt-BR')}
                         </CardDescription>
                       </div>
-                       <Badge className="text-xs" variant={order.status === 'Entregue' ? 'default' : order.status === 'Cancelado' ? 'destructive' : 'secondary'}>
+                       <Badge className={`text-xs ${getStatusColorClass(order.status)}`}>
                         {order.status}
                       </Badge>
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
-                      <p className="text-sm font-medium">Total: {formatPrice(order.totalAmount)}</p>
-                      <p className="text-xs text-muted-foreground">Itens: {order.items.reduce((sum, item) => sum + item.quantity, 0)}</p>
-                      {/* <Button size="sm" variant="link" className="p-0 h-auto mt-1">Ver Detalhes</Button> */}
+                       <ul className="text-xs list-disc list-inside text-muted-foreground space-y-0.5">
+                        {order.items.map(item => (
+                            <li key={item.productId}>{item.productName} (x{item.quantity}) - {formatPrice(item.priceAtPurchase * item.quantity)}</li>
+                        ))}
+                       </ul>
+                      <p className="text-sm font-medium mt-2">Total: {formatPrice(order.totalAmount)}</p>
                     </CardContent>
                   </Card>
                 ))}
                 {userOrders.length > 5 && (
                     <p className="text-sm text-center text-muted-foreground">
-                        E mais {userOrders.length - 5} pedido(s). {/* Link to full order history page later */}
+                        E mais {userOrders.length - 5} pedido(s).
                     </p>
                 )}
               </div>
             ) : (
-              <div className="p-4 border rounded-lg bg-muted/30 text-center">
-                <ShoppingBag size={32} className="mx-auto mb-2 text-muted-foreground" />
+              <div className="p-6 border rounded-lg bg-muted/30 text-center">
+                <ShoppingBag size={32} className="mx-auto mb-3 text-muted-foreground" />
                 <p className="text-muted-foreground">Você ainda não fez nenhum pedido.</p>
                 <Link href="/" passHref>
                     <Button variant="link" className="mt-2">Começar a comprar</Button>

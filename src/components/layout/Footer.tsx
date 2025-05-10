@@ -1,7 +1,9 @@
 
+"use client";
 import { STORE_NAME } from '@/lib/constants';
-import { Instagram, Mail } from 'lucide-react';
+import { Instagram, Mail, Newspaper } from 'lucide-react'; // Added Newspaper
 import NewsletterForm from './NewsletterForm'; 
+import Link from 'next/link';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -11,7 +13,13 @@ export default function Footer() {
         
         <NewsletterForm /> 
 
-        <div className="mt-10 flex justify-center items-center space-x-6">
+        <nav className="mt-8 mb-6 flex justify-center items-center space-x-6">
+            <Link href="/blog" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
+                <Newspaper size={20} /> Blog
+            </Link>
+        </nav>
+
+        <div className="mt-6 flex justify-center items-center space-x-6">
           <a
             href="https://instagram.com/vsimports_ofc"
             target="_blank"

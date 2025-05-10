@@ -1,3 +1,4 @@
+
 "use client";
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
@@ -6,23 +7,23 @@ import { v4 as uuidv4 } from 'uuid';
 
 interface ProductAdminState {
   products: Product[];
-  addProduct: (productData: Omit<Product, 'id' | 'reviews'>) => void;
+  addProduct: (productData: Omit<Product, 'id' | 'reviews'>) => Product;
   updateProduct: (productId: string, productData: Partial<Omit<Product, 'id'>>) => void;
   deleteProduct: (productId: string) => void;
   getProductById: (productId: string) => Product | undefined;
-  setProducts: (products: Product[]) => void;
-  addReviewToProduct: (productId: string, reviewData: Omit<Review, 'id' | 'date'>) => void;
+  addReviewToProduct: (productId: string, reviewData: Omit<Review, 'id' | 'date'>, userId?: string) => void;
   isInitialized: boolean; 
 }
 
+// Helper function to ensure all product fields are present with defaults
 const ensureProductFields = (product: any, existingId?: string): Product => {
   const id = existingId || product.id || uuidv4();
   return {
     id: id,
-    name: product.name || '',
-    description: product.description || '',
+    name: product.name || 'Nome Indefinido',
+    description: product.description || 'Descrição Indefinida',
     price: typeof product.price === 'number' && !isNaN(product.price) ? product.price : 0,
-    image: product.image || '', // Default to empty string if not provided, form should enforce it
+    image: product.image || `https://picsum.photos/seed/${id}/400/300`, // Default placeholder
     category: product.category || '',
     color: product.color || '',
     size: product.size || '',
@@ -34,6 +35,7 @@ const ensureProductFields = (product: any, existingId?: string): Product => {
       rating: typeof r.rating === 'number' ? Math.max(1, Math.min(5, r.rating)) : 3,
       comment: r.comment || '',
       date: r.date || new Date().toISOString(),
+      userId: r.userId,
     })) : [],
   };
 };
@@ -42,16 +44,15 @@ export const useProductAdminStore = create(
   persist<ProductAdminState>(
     (set, get) => ({
       products: [], 
-      isInitialized: false, // Will be set to true by the merge function after hydration
+      isInitialized: false,
 
       addProduct: (productData) => {
-        const newProductWithDefaults: Omit<Product, 'id'> = {
+        const newProductWithDefaults = ensureProductFields({
           ...productData,
-          stock: productData.stock ?? 0,
-          reviews: [], 
-        };
-        const newProduct: Product = ensureProductFields(newProductWithDefaults);
-        set((state) => ({ products: [...state.products, newProduct] }));
+          reviews: [], // New products start with no reviews
+        });
+        set((state) => ({ products: [...state.products, newProductWithDefaults] }));
+        return newProductWithDefaults;
       },
       updateProduct: (productId, productData) => {
         set((state) => ({
@@ -68,10 +69,7 @@ export const useProductAdminStore = create(
       getProductById: (productId) => {
         return get().products.find((p) => p.id === productId);
       },
-      setProducts: (newProducts) => { 
-        set({ products: newProducts.map(p => ensureProductFields(p)), isInitialized: true });
-      },
-      addReviewToProduct: (productId, reviewData) => {
+      addReviewToProduct: (productId, reviewData, userId) => {
         set((state) => ({
           products: state.products.map((p) =>
             p.id === productId
@@ -79,13 +77,18 @@ export const useProductAdminStore = create(
                   ...p,
                   reviews: [
                     ...(p.reviews || []),
-                    { ...reviewData, id: uuidv4(), date: new Date().toISOString() },
-                  ],
+                    { 
+                      ...reviewData, 
+                      id: uuidv4(), 
+                      date: new Date().toISOString(),
+                      userId: userId 
+                    },
+                  ].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()), // Sort reviews by date descending
                 }
               : p
           ),
         }));
-      }
+      },
     }),
     {
       name: 'vsimports-product-storage',
@@ -93,29 +96,34 @@ export const useProductAdminStore = create(
       partialize: (state) => ({
         products: state.products.map(p => ensureProductFields(p)) 
       }),
+      onRehydrateStorage: () => (state) => {
+        // This is called when rehydration is attempted.
+        // The actual setting of isInitialized is better done in merge or after successful rehydration.
+      },
       merge: (persistedState, currentState) => {
         let newProducts = currentState.products; // Default to initial products (empty array)
         
-        // `persistedState` is the object from storage, matching the `partialize` structure
         if (persistedState && typeof persistedState === 'object' && 'products' in persistedState) {
           const loadedProducts = (persistedState as { products: Product[] }).products;
           if (Array.isArray(loadedProducts)) {
             newProducts = loadedProducts.map(p => ensureProductFields(p));
           }
+        } else {
+          // If nothing in localStorage, seed with reference products
+          // newProducts = referenceSeedProducts.map(p => ensureProductFields(p)); // Removed seeding here
         }
         
         return {
-          ...currentState, // Spread current state to keep methods and default values
-          products: newProducts, // Set hydrated and processed products
-          isInitialized: true, // Mark as initialized
+          ...currentState,
+          products: newProducts,
+          isInitialized: true, // Mark as initialized after merge
         };
       },
     }
   )
 );
 
-// Trigger rehydration attempt on client load
+// Initialize store on client load
 if (typeof window !== 'undefined') {
-  // Calling getState() is enough to initiate the persisted state loading
-  useProductAdminStore.getState(); 
+  useProductAdminStore.getState().isInitialized; // Access isInitialized to trigger rehydration
 }

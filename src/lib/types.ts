@@ -5,6 +5,7 @@ export interface Review {
   rating: number; // 1-5
   comment: string;
   date: string; // ISO string
+  userId?: string; // Optional: if you want to link reviews to users
 }
 
 export interface Product {
@@ -34,35 +35,28 @@ export interface OrderItem {
   priceAtPurchase: number; // Price of the product when the order was placed
 }
 
-export interface Order {
-  id: string;
-  customerName: string; // For simplicity, will be userID when users are implemented
-  customerEmail: string; // For simplicity
-  items: OrderItem[];
-  totalAmount: number;
-  status: 'Pendente' | 'Processando' | 'Enviado' | 'Entregue' | 'Cancelado';
-  orderDate: string; // ISO string
-  shippingAddress: { // Example, can be more detailed
-    street: string;
-    city: string;
-    postalCode: string;
-    country: string;
-  };
-  paymentMethod?: string; // e.g., 'WhatsApp Transfer', 'Credit Card'
-}
-
 export interface User {
   id: string;
   email: string;
   name?: string;
   passwordHash?: string; // Only for server-side, not to be sent to client
-  addresses?: Array<{
-    id: string;
+  // addresses will be part of order for simplicity in this mock
+}
+
+export interface Order {
+  id: string;
+  userId: string; // Link to the user who placed the order
+  customerName: string; 
+  customerEmail: string;
+  items: OrderItem[];
+  totalAmount: number;
+  status: 'Pendente' | 'Processando' | 'Enviado' | 'Entregue' | 'Cancelado';
+  orderDate: string; // ISO string
+  shippingAddress: {
     street: string;
     city: string;
     postalCode: string;
     country: string;
-    isDefault?: boolean;
-  }>;
-  // orderHistory will be derived by filtering orders by userId
+  };
+  // paymentMethod is removed as checkout is out of scope
 }

@@ -1,8 +1,9 @@
+
 "use client";
 
 import type { Product, CartItem } from '@/lib/types';
 import { create } from 'zustand';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast'; // Changed import
 
 interface CartState {
   items: CartItem[];
@@ -17,7 +18,7 @@ interface CartState {
 export const useCartStore = create<CartState>((set, get) => ({
   items: [],
   addItem: (product) => {
-    const { toast } = useToast.getState(); // Access toast imperatively
+    // Removed: const { toast } = useToast.getState();
     set((state) => {
       const existingItem = state.items.find((item) => item.id === product.id);
       if (existingItem) {
@@ -33,7 +34,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     });
   },
   removeItem: (productId) => {
-    const { toast } = useToast.getState();
+    // Removed: const { toast } = useToast.getState();
     const productName = get().items.find(item => item.id === productId)?.name || "Produto";
     set((state) => ({
       items: state.items.filter((item) => item.id !== productId),
@@ -41,7 +42,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     toast({ title: "Produto removido", description: `${productName} foi removido do carrinho.` });
   },
   updateQuantity: (productId, quantity) => {
-    const { toast } = useToast.getState();
+    // Removed: const { toast } = useToast.getState();
     const productName = get().items.find(item => item.id === productId)?.name || "Produto";
     set((state) => ({
       items: state.items.map((item) =>
@@ -55,7 +56,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     }
   },
   clearCart: () => {
-    const { toast } = useToast.getState();
+    // Removed: const { toast } = useToast.getState();
     set({ items: [] });
     toast({ title: "Carrinho esvaziado", description: "Todos os produtos foram removidos do carrinho." });
   },
@@ -66,3 +67,4 @@ export const useCartStore = create<CartState>((set, get) => ({
     return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
   },
 }));
+

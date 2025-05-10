@@ -5,7 +5,7 @@ import { Separator } from '@/components/ui/separator';
 export default function HomePage() {
   return (
     <div className="space-y-8">
-      <section className="text-center py-8 bg-gradient-to-r from-primary to-secondary rounded-lg shadow-xl">
+      <section className="text-center py-16 bg-gradient-to-r from-primary to-secondary rounded-lg shadow-xl"> {/* Increased py-8 to py-16 */}
         <h1 className="text-4xl font-extrabold text-primary-foreground tracking-tight sm:text-5xl md:text-6xl">
           Bem-vindo à VS Imports!
         </h1>

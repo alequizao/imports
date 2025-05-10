@@ -7,14 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MinusCircle, PlusCircle, Trash2 } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
-import { formatPrice } from '@/lib/utils'; // Updated import
+import { formatPrice } from '@/lib/utils'; 
 import Link from 'next/link';
+import React from 'react'; // Import React for React.memo
 
 interface CartItemRowProps {
   item: CartItem;
 }
 
-export default function CartItemRow({ item }: CartItemRowProps) {
+function CartItemRow({ item }: CartItemRowProps) {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
 
@@ -27,11 +28,11 @@ export default function CartItemRow({ item }: CartItemRowProps) {
       <div className="flex items-center gap-4 w-full sm:w-2/5">
         <div className="w-[80px] h-[80px] bg-muted/10 rounded-md flex items-center justify-center">
           <Image
-            src={item.image} // This will be a Data URI or URL
+            src={item.image} 
             alt={item.name}
             width={80}
             height={80}
-            className="rounded-md object-contain aspect-square" // Changed from object-cover
+            className="rounded-md object-contain aspect-square" 
           />
         </div>
         <div>
@@ -53,6 +54,7 @@ export default function CartItemRow({ item }: CartItemRowProps) {
           onChange={(e) => handleQuantityChange(parseInt(e.target.value, 10) || 1)}
           className="w-16 text-center"
           min="1"
+          aria-label={`Quantidade de ${item.name}`}
         />
         <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(item.quantity + 1)}>
           <PlusCircle size={20} />
@@ -64,7 +66,7 @@ export default function CartItemRow({ item }: CartItemRowProps) {
         {formatPrice(item.price * item.quantity)}
       </p>
 
-      <Button variant="destructive" size="icon" onClick={() => removeItem(item.id)}>
+      <Button variant="destructive" size="icon" onClick={() => removeItem(item.id)} aria-label={`Remover ${item.name} do carrinho`}>
         <Trash2 size={20} />
         <span className="sr-only">Remover item</span>
       </Button>
@@ -72,3 +74,4 @@ export default function CartItemRow({ item }: CartItemRowProps) {
   );
 }
 
+export default React.memo(CartItemRow);

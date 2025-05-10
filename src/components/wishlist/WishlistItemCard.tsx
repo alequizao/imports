@@ -4,19 +4,20 @@
 import Image from 'next/image';
 import type { WishlistItem } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShoppingCartIcon, Trash2 } from 'lucide-react';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useCartStore } from '@/store/cartStore';
-import { formatPrice } from '@/lib/utils'; // Updated import
+import { formatPrice } from '@/lib/utils'; 
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import React from 'react'; // Import React for React.memo
 
 interface WishlistItemCardProps {
   item: WishlistItem;
 }
 
-export default function WishlistItemCard({ item }: WishlistItemCardProps) {
+function WishlistItemCard({ item }: WishlistItemCardProps) {
   const removeFromWishlist = useWishlistStore((state) => state.removeItem);
   const addItemToCart = useCartStore((state) => state.addItem);
   const { toast } = useToast();
@@ -25,9 +26,6 @@ export default function WishlistItemCard({ item }: WishlistItemCardProps) {
     e.stopPropagation(); 
     if (item.stock > 0) {
       addItemToCart(item);
-      // Optionally remove from wishlist after adding to cart
-      // removeFromWishlist(item.id); 
-      // toast({ title: `${item.name} adicionado ao carrinho e removido da lista de desejos.` });
     } else {
        toast({ title: "Produto Esgotado", description: "Este produto não está disponível em estoque.", variant: "destructive" });
     }
@@ -56,9 +54,6 @@ export default function WishlistItemCard({ item }: WishlistItemCardProps) {
           </CardHeader>
           <CardContent className="p-4 flex-grow">
             <CardTitle className="text-lg font-semibold text-primary mb-1 truncate" title={item.name}>{item.name}</CardTitle>
-            {/* <CardDescription className="text-sm text-muted-foreground mb-2 h-10 overflow-hidden text-ellipsis">
-              {item.description}
-            </CardDescription> */}
             <p className="text-xl font-bold text-secondary">{formatPrice(item.price)}</p>
             <p className={`text-xs mt-1 ${item.stock > 0 ? 'text-green-600' : 'text-destructive'}`}>
                 {item.stock > 0 ? `${item.stock} em estoque` : 'Esgotado'}
@@ -72,14 +67,17 @@ export default function WishlistItemCard({ item }: WishlistItemCardProps) {
           className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90" 
           onClick={handleAddToCart}
           disabled={item.stock === 0}
+          aria-label={item.stock > 0 ? `Adicionar ${item.name} ao carrinho` : `${item.name} esgotado`}
         >
           <ShoppingCartIcon size={18} className="mr-2" />
           Carrinho
         </Button>
-        <Button variant="outline" size="icon" onClick={handleRemoveFromWishlist} aria-label="Remover da lista de desejos">
+        <Button variant="outline" size="icon" onClick={handleRemoveFromWishlist} aria-label={`Remover ${item.name} da lista de desejos`}>
             <Trash2 size={18} className="text-destructive"/>
         </Button>
       </CardFooter>
     </Card>
   );
 }
+
+export default React.memo(WishlistItemCard);

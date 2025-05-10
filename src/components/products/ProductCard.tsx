@@ -7,15 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShoppingCartIcon } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
-import { formatPrice } from '@/lib/utils'; // Updated import
+import { formatPrice } from '@/lib/utils'; 
 import Link from 'next/link'; 
 import { useToast } from '@/hooks/use-toast';
+import React from 'react'; // Import React for React.memo
 
 interface ProductCardProps {
   product: Product;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+function ProductCard({ product }: ProductCardProps) {
   const addItemToCart = useCartStore((state) => state.addItem);
   const { toast } = useToast();
 
@@ -41,6 +42,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 objectFit="contain" 
                 data-ai-hint="product image"
                 className="p-1" 
+                priority={false} // Explicitly set priority to false for non-LCP images
               />
             </div>
           </CardHeader>
@@ -71,3 +73,5 @@ export default function ProductCard({ product }: ProductCardProps) {
     </Card>
   );
 }
+
+export default React.memo(ProductCard);

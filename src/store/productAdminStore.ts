@@ -2,7 +2,7 @@
 import {create} from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Product } from '@/lib/types';
-import { initialSeedProducts } from '@/data/products'; // Import initial seed products
+// import { initialSeedProducts } from '@/data/products'; // No longer used for initial state
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -30,12 +30,13 @@ const ensureProductFields = (product: any, existingId?: string): Product => ({
   model: product.model,
 });
 
-const hydratedInitialProducts = initialSeedProducts.map(p => ensureProductFields(p));
+// const hydratedInitialProducts = initialSeedProducts.map(p => ensureProductFields(p));
+const hydratedInitialProducts: Product[] = []; // Initialize with an empty array
 
 export const useProductAdminStore = create(
   persist<ProductAdminState>(
     (set, get) => ({
-      products: hydratedInitialProducts, // Initialize with seeded products as default
+      products: hydratedInitialProducts, // Initialize with empty array as default
       addProduct: (productData) => {
         const newProduct: Product = ensureProductFields(productData);
         set((state) => ({ products: [...state.products, newProduct] }));
@@ -71,4 +72,4 @@ export const useProductAdminStore = create(
 
 // Note: Product changes in this store are now persisted to localStorage.
 // The `banco.sql` file serves as a reference for initial data structure or for a potential future backend.
-// The application currently uses `initialSeedProducts` to populate the store if localStorage is empty.
+// The application currently uses an empty array to initialize the store if localStorage is empty.

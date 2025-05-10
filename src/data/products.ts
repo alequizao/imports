@@ -1,6 +1,9 @@
 import type { Product } from '@/lib/types';
 
-export const products: Product[] = [
+// Estes são dados iniciais que podem ser usados para popular um banco de dados.
+// Em uma aplicação com banco de dados, esta lista seria carregada no banco
+// e não usada diretamente pelo frontend ou store após a inicialização.
+export const initialSeedProducts: Product[] = [
   {
     id: '1',
     name: 'Perfume Importado Alpha',

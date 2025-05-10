@@ -2,10 +2,7 @@
 import {create} from 'zustand';
 import type { Product } from '@/lib/types';
 import { products as initialProducts } from '@/data/products'; 
-// Note: Using a real UUID library is better for production if IDs need to be truly unique.
-// For this example, a simple counter or Math.random based ID might suffice if not persisting.
-// Let's use a simple timestamp-based ID generator for now to avoid new dependencies unless specified.
-const generateId = () => String(Date.now() + Math.random().toString(36).substring(2, 9));
+import { v4 as uuidv4 } from 'uuid';
 
 
 interface ProductAdminState {
@@ -20,11 +17,11 @@ interface ProductAdminState {
 // Helper to ensure all products have new fields, even if loaded from old data structure
 // Also ensures ID exists.
 const ensureProductFields = (product: any, existingId?: string): Product => ({
-  id: existingId || product.id || generateId(), // Use existing ID if updating, else product.id, else generate
+  id: existingId || product.id || uuidv4(), // Use existing ID if updating, else product.id, else generate
   name: product.name || '',
   description: product.description || '',
   price: typeof product.price === 'number' ? product.price : 0,
-  image: product.image || `https://picsum.photos/seed/${generateId()}/400/300`, // default placeholder with random seed
+  image: product.image || `https://picsum.photos/seed/${uuidv4()}/400/300`, // default placeholder with random seed
   category: product.category,
   dataAiHint: product.dataAiHint,
   color: product.color,
@@ -62,3 +59,4 @@ export const useProductAdminStore = create<ProductAdminState>((set, get) => ({
 
 // Note: Product changes in this store are in-memory and will be lost on browser refresh/server restart.
 // For persistence, a backend/database solution is required.
+

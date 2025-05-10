@@ -46,7 +46,7 @@ export default function LoginForm() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Senha</Label>
-            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="admin1010" />
+            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Digite sua senha" />
           </div>
           <Button type="submit" className="w-full bg-primary hover:bg-primary/90">Entrar</Button>
         </form>
@@ -54,3 +54,4 @@ export default function LoginForm() {
     </Card>
   );
 }
+

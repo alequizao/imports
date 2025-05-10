@@ -28,7 +28,7 @@ const productFormSchema = z.object({
     },
     z.number({invalid_type_error: "Preço deve ser um número."}).positive("Preço deve ser um número positivo.")
   ),
-  image: z.string().url({ message: "URL da imagem inválida." }).or(z.literal('')).or(z.string().min(1, "URL da imagem é obrigatória.")),
+  image: z.string().min(1, "URL da imagem é obrigatória.").url({ message: "URL da imagem inválida." }),
   category: z.string().optional(),
   dataAiHint: z.string().max(50, "Dica AI deve ter no máximo 50 caracteres.").optional(),
   color: z.string().optional(),
@@ -60,7 +60,7 @@ export default function ProductForm({ product }: ProductFormProps) {
       name: '',
       description: '',
       price: undefined, // Use undefined to allow placeholder to show
-      image: '',
+      image: '', // Will require user input for new products due to schema change
       category: '',
       dataAiHint: '',
       color: '',
@@ -202,3 +202,4 @@ export default function ProductForm({ product }: ProductFormProps) {
     </Card>
   );
 }
+

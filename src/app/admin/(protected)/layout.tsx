@@ -1,4 +1,3 @@
-
 "use client";
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
@@ -7,7 +6,7 @@ import { useAdminAuthStore } from '@/store/adminAuthStore';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Package, LogOut, ShieldCheck, ShoppingBag, Menu, LayoutDashboard, Receipt } from 'lucide-react'; // Added Receipt
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet"; // Removed SheetHeader
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 
@@ -41,13 +40,13 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
 
   const handleLogout = () => {
     logout(); 
-    router.push('/admin/login'); // Redirect to login page after logout
+    router.push('/admin/login'); 
   };
 
   const navItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/products', label: 'Produtos', icon: ShoppingBag },
-    { href: '/admin/orders', label: 'Pedidos', icon: Receipt }, // Added Orders link
+    { href: '/admin/orders', label: 'Pedidos', icon: Receipt }, 
   ];
 
   const SidebarNav = ({isMobile = false}: {isMobile?: boolean}) => (
@@ -59,9 +58,10 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
             className="w-full justify-start"
             aria-current={pathname.startsWith(item.href) ? "page" : undefined}
             onClick={() => {
-              // Close sheet on mobile after navigation
               if (isMobile) {
-                const trigger = document.querySelector('[data-radix-sheet-trigger]');
+                // Attempt to close the sheet by simulating a click on its trigger
+                // This is a common workaround; ensure your trigger has a unique identifier if needed.
+                const trigger = document.querySelector('button[data-radix-sheet-trigger]');
                 if (trigger instanceof HTMLElement) trigger.click();
               }
             }}
@@ -83,13 +83,14 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
               <ShieldCheck className="h-6 w-6" />
               <span className="">Painel Admin</span>
             </Link>
-            <SheetTitle className="sr-only">Navegação Principal do Admin</SheetTitle>
+            {/* Title for SR, not visible. The actual title is part of the content. */}
+            <h1 className="sr-only">Navegação Principal do Admin</h1>
           </div>
           <ScrollArea className="flex-1">
             <SidebarNav />
           </ScrollArea>
           <div className="mt-auto p-4 border-t">
-            <Button variant="outline" onClick={handleLogout} className="w-full justify-start text-destructive-foreground border-destructive hover:bg-destructive hover:text-destructive-foreground">
+            <Button variant="outline" onClick={handleLogout} className="w-full justify-start text-destructive border-destructive hover:bg-destructive/10 hover:text-destructive-foreground focus:text-destructive-foreground">
               <LogOut className="mr-2 h-5 w-5" /> Sair
             </Button>
           </div>
@@ -105,18 +106,19 @@ export default function AdminProtectedLayout({ children }: { children: ReactNode
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0">
-              <SheetHeader className="flex h-14 flex-row items-center border-b px-4 py-0 space-y-0 lg:h-[60px] lg:px-6">
+              {/* Replaced SheetHeader with a div and made SheetDescription a direct child of SheetContent for ARIA */}
+              <div className="flex h-14 flex-row items-center border-b px-4 lg:h-[60px] lg:px-6">
                 <SheetTitle className="text-lg font-semibold text-primary flex items-center gap-2">
                     <ShieldCheck className="h-6 w-6" />
                     Painel Admin
                 </SheetTitle>
-                 <SheetDescription className="sr-only">Admin navigation menu</SheetDescription>
-              </SheetHeader>
+              </div>
+              <SheetDescription className="sr-only">Admin navigation menu</SheetDescription>
               <ScrollArea className="flex-1">
                 <SidebarNav isMobile={true}/>
               </ScrollArea>
                <div className="mt-auto p-4 border-t">
-                <Button variant="outline" onClick={handleLogout} className="w-full justify-start text-destructive-foreground border-destructive hover:bg-destructive hover:text-destructive-foreground">
+                <Button variant="outline" onClick={handleLogout} className="w-full justify-start text-destructive border-destructive hover:bg-destructive/10 hover:text-destructive-foreground focus:text-destructive-foreground">
                   <LogOut className="mr-2 h-5 w-5" /> Sair
                 </Button>
               </div>

@@ -2,10 +2,11 @@
 "use client";
 
 import { useCartStore } from '@/store/cartStore';
+import { useProductAdminStore } from '@/store/productAdminStore';
 import CartItemRow from './CartItemRow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingCart, AlertTriangle, Send, Trash2 } from 'lucide-react'; // Added Trash2
+import { ShoppingCart, AlertTriangle, Send, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { formatPrice } from '@/data/products';
 import { WHATSAPP_NUMBER, STORE_NAME } from '@/lib/constants';
@@ -13,18 +14,59 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from 'react';
 
 export default function CartView() {
-  const items = useCartStore((state) => state.items);
-  const totalPrice = useCartStore((state) => state.getTotalPrice());
+  // Subscribe to store changes for re-renders
+  const cartItemsFromStore = useCartStore((state) => state.items);
+  const getTotalPrice = useCartStore((state) => state.getTotalPrice);
   const clearCart = useCartStore((state) => state.clearCart);
+  
+  const productsFromAdminStore = useProductAdminStore((state) => state.products);
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true); // Ensure component is mounted before accessing client-side store state for totals
+    setMounted(true);
   }, []);
 
+  // Effect to synchronize cart with product availability
+  useEffect(() => {
+    if (!mounted || !productsFromAdminStore || !cartItemsFromStore) return;
+
+    const itemsToRemove: { id: string, name: string }[] = [];
+    // Use the latest cartItems from store directly inside effect if needed or pass cartItemsFromStore
+    const currentCartItems = useCartStore.getState().items;
+
+    currentCartItems.forEach(cartItem => {
+      const productExists = productsFromAdminStore.some(p => p.id === cartItem.id);
+      if (!productExists) {
+        itemsToRemove.push({ id: cartItem.id, name: cartItem.name });
+      }
+    });
+
+    if (itemsToRemove.length > 0) {
+      const removedProductNames = itemsToRemove.map(item => item.name);
+      itemsToRemove.forEach(item => {
+        useCartStore.getState().removeItem(item.id, { suppressToast: true }); // Suppress individual toasts
+      });
+
+      toast({
+        title: "Itens Atualizados no Carrinho",
+        description: `Os seguintes produtos não estão mais disponíveis e foram removidos: ${removedProductNames.join(', ')}.`,
+        variant: "destructive",
+        duration: 7000,
+      });
+    }
+  // productsFromAdminStore and cartItemsFromStore (their reference or a derived value like length/JSON.stringify for deep objects)
+  // are dependencies. `toast` is stable.
+  }, [mounted, productsFromAdminStore, cartItemsFromStore, toast]);
+
+
+  // Items to display are now directly from the store, which has been updated by the useEffect.
+  // This ensures UI reflects the synchronized state.
+  const itemsForDisplay = cartItemsFromStore; 
+  const currentTotalPrice = getTotalPrice(); // This will be up-to-date.
+
   const handleWhatsAppCheckout = () => {
-    if (items.length === 0) {
+    if (itemsForDisplay.length === 0) {
       toast({
         title: "Carrinho Vazio",
         description: "Adicione produtos ao carrinho antes de finalizar a compra.",
@@ -34,22 +76,20 @@ export default function CartView() {
     }
 
     let message = `Olá ${STORE_NAME}! Gostaria de fazer o seguinte pedido:\n\n`;
-    items.forEach(item => {
-      message += `- ${item.name} (x${item.quantity}): ${formatPrice(item.price * item.quantity)}\n`;
+    let messageTotalPrice = 0;
+    itemsForDisplay.forEach(item => {
+      const itemSubtotal = item.price * item.quantity;
+      message += `- ${item.name} (x${item.quantity}): ${formatPrice(itemSubtotal)}\n`;
+      messageTotalPrice += itemSubtotal;
     });
-    message += `\nTotal: ${formatPrice(totalPrice)}\n\n`;
+    message += `\nTotal: ${formatPrice(messageTotalPrice)}\n\n`;
     message += `Aguardo o contato para combinar o pagamento e entrega.`;
 
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
-    
-    // Optionally clear cart after sending to WhatsApp, or wait for confirmation
-    // clearCart(); 
-    // toast({ title: "Pedido enviado!", description: "Seu pedido foi formatado para envio via WhatsApp." });
   };
 
   if (!mounted) {
-    // Basic skeleton or loading state while waiting for client-side hydration
     return (
       <Card className="w-full max-w-3xl mx-auto shadow-xl">
         <CardHeader>
@@ -65,7 +105,7 @@ export default function CartView() {
   }
 
 
-  if (items.length === 0) {
+  if (itemsForDisplay.length === 0) {
     return (
       <Card className="w-full max-w-3xl mx-auto shadow-xl text-center">
         <CardHeader>
@@ -90,19 +130,19 @@ export default function CartView() {
     <Card className="w-full max-w-3xl mx-auto shadow-xl">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-primary flex items-center gap-2">
-          <ShoppingCart size={28} /> Meu Carrinho
+          <ShoppingCart size={28} /> Meu Carrinho ({itemsForDisplay.reduce((acc, item) => acc + item.quantity, 0)} itens)
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {items.map(item => (
+        {itemsForDisplay.map(item => (
           <CartItemRow key={item.id} item={item} />
         ))}
       </CardContent>
       <CardFooter className="flex flex-col sm:flex-row justify-between items-center p-6 border-t gap-4">
         <div className="text-xl font-bold text-secondary">
-          Total: {formatPrice(totalPrice)}
+          Total: {formatPrice(currentTotalPrice)}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
           <Button variant="outline" onClick={clearCart} className="text-destructive border-destructive hover:bg-destructive/10">
             <Trash2 size={18} className="mr-2" />
             Esvaziar Carrinho

@@ -6,7 +6,7 @@ import { useProductAdminStore } from '@/store/productAdminStore';
 import CartItemRow from './CartItemRow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingCart, AlertTriangle, Send, Trash2 } from 'lucide-react';
+import { ShoppingCart, HeartCrack, Send, Trash2 } from 'lucide-react'; // Changed AlertTriangle to HeartCrack
 import Link from 'next/link';
 import { formatPrice } from '@/lib/utils';
 import { WHATSAPP_NUMBER, STORE_NAME } from '@/lib/constants';
@@ -74,13 +74,11 @@ export default function CartView() {
     let message = `👋 Olá ${STORE_NAME}!\n\n`;
     message += `Gostaria de fazer o seguinte pedido:\n\n`;
     message += `🛍️ *Itens do Pedido:*\n`;
-    let messageTotalPrice = 0;
     itemsForDisplay.forEach(item => {
       const itemSubtotal = item.price * item.quantity;
       message += `  • ${item.name} (x${item.quantity}) - ${formatPrice(itemSubtotal)}\n`;
-      messageTotalPrice += itemSubtotal;
     });
-    message += `\n💰 *Total do Pedido:* ${formatPrice(messageTotalPrice)}\n\n`;
+    message += `\n💰 *Total do Pedido:* ${formatPrice(currentTotalPrice)}\n\n`;
     message += `Aguardo o contato para combinar o pagamento e a entrega. ✅`;
 
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
@@ -137,7 +135,7 @@ export default function CartView() {
       <Card className="w-full max-w-3xl mx-auto shadow-xl text-center">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-primary flex items-center justify-center gap-2">
-            <AlertTriangle size={28} className="text-destructive" /> Carrinho Vazio
+            <HeartCrack size={28} className="text-destructive" /> Carrinho Vazio
           </CardTitle>
         </CardHeader>
         <CardContent className="py-8">

@@ -5,7 +5,7 @@ import { useCartStore } from '@/store/cartStore';
 import CartItemRow from './CartItemRow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingCart, AlertTriangle, Send } from 'lucide-react';
+import { ShoppingCart, AlertTriangle, Send, Trash2 } from 'lucide-react'; // Added Trash2
 import Link from 'next/link';
 import { formatPrice } from '@/data/products';
 import { WHATSAPP_NUMBER, STORE_NAME } from '@/lib/constants';
@@ -120,3 +120,4 @@ export default function CartView() {
     </Card>
   );
 }
+

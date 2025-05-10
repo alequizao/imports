@@ -5,7 +5,7 @@ import { Package, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/store/cartStore';
-import { STORE_NAME } from '@/lib/constants';
+import Logo from './Logo'; // Import the new Logo component
 import { useEffect, useState } from 'react';
 
 export default function Header() {
@@ -23,7 +23,8 @@ export default function Header() {
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <Package size={32} />
-          <h1 className="text-2xl font-bold">{STORE_NAME}</h1>
+          {/* Replace h1 with Logo component */}
+          <Logo className="h-8 w-auto" /> 
         </Link>
         <nav className="flex items-center gap-4">
           <Link href="/" passHref>

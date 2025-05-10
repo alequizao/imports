@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -26,13 +27,14 @@ export default function ProductCard({ product }: ProductCardProps) {
       <Link href={`/product/${product.id}`} passHref legacyBehavior>
         <a className="flex flex-col flex-grow cursor-pointer">
           <CardHeader className="p-0">
-            <div className="aspect-[4/3] relative w-full">
+            <div className="aspect-[4/3] relative w-full bg-muted/10">
               <Image
                 src={product.image || `https://picsum.photos/seed/${product.id}/400/300`}
                 alt={product.name}
                 layout="fill"
-                objectFit="cover"
+                objectFit="contain" // Changed from "cover" to "contain"
                 data-ai-hint="product image"
+                className="p-1" // Added padding to ensure image is not flush with edges
               />
             </div>
           </CardHeader>
@@ -54,3 +56,4 @@ export default function ProductCard({ product }: ProductCardProps) {
     </Card>
   );
 }
+

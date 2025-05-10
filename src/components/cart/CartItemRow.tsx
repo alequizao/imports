@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -24,15 +25,17 @@ export default function CartItemRow({ item }: CartItemRowProps) {
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b hover:bg-muted/50 transition-colors rounded-lg">
       <div className="flex items-center gap-4 w-full sm:w-2/5">
-        <Image
-          src={item.image} // This will be a Data URI or URL
-          alt={item.name}
-          width={80}
-          height={80}
-          className="rounded-md object-cover"
-        />
+        <div className="w-[80px] h-[80px] bg-muted/10 rounded-md flex items-center justify-center">
+          <Image
+            src={item.image} // This will be a Data URI or URL
+            alt={item.name}
+            width={80}
+            height={80}
+            className="rounded-md object-contain aspect-square" // Changed from object-cover
+          />
+        </div>
         <div>
-          <Link href={`/#${item.id}`} className="text-lg font-semibold text-primary hover:underline truncate" title={item.name}>
+          <Link href={`/product/${item.id}`} className="text-lg font-semibold text-primary hover:underline truncate" title={item.name}>
             {item.name}
           </Link>
           <p className="text-sm text-muted-foreground">{formatPrice(item.price)}</p>
@@ -68,3 +71,4 @@ export default function CartItemRow({ item }: CartItemRowProps) {
     </div>
   );
 }
+

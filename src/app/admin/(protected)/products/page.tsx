@@ -1,3 +1,4 @@
+
 "use client";
 import Link from 'next/link';
 import Image from 'next/image';
@@ -124,14 +125,16 @@ export default function AdminProductsPage() {
                 {filteredProducts.map((product) => (
                   <TableRow key={product.id} className="hover:bg-muted/50">
                     <TableCell className="p-2">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        width={50}
-                        height={50}
-                        className="rounded-md object-cover aspect-square bg-muted"
-                        onError={(e) => e.currentTarget.src = `https://picsum.photos/seed/${product.id}/50/50`} // Fallback for broken images
-                      />
+                      <div className="w-[50px] h-[50px] bg-muted/10 rounded-md flex items-center justify-center">
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          width={50}
+                          height={50}
+                          className="rounded-md object-contain aspect-square" // Changed from object-cover
+                          onError={(e) => e.currentTarget.src = `https://picsum.photos/seed/${product.id}/50/50`} 
+                        />
+                      </div>
                     </TableCell>
                     <TableCell className="font-medium max-w-[150px] sm:max-w-[250px] truncate" title={product.name}>
                       {product.name}
@@ -146,7 +149,7 @@ export default function AdminProductsPage() {
                       {(!product.color && !product.size && !product.model) && '-'}
                     </TableCell>
                     <TableCell className="text-right space-x-1 sm:space-x-2 p-2">
-                      <Link href={`/#${product.id}`} target="_blank" passHref aria-label="Ver produto na loja">
+                      <Link href={`/product/${product.id}`} target="_blank" passHref aria-label="Ver produto na loja">
                         <Button variant="ghost" size="icon" className="text-primary hover:text-primary/80">
                           <Eye size={18} />
                         </Button>
@@ -186,3 +189,4 @@ export default function AdminProductsPage() {
     </Card>
   );
 }
+

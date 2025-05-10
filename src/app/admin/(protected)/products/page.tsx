@@ -5,7 +5,7 @@ import { useProductAdminStore } from '@/store/productAdminStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Edit, Trash2, Search, Eye } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Search, Eye, ShoppingBag } from 'lucide-react';
 import { formatPrice } from '@/data/products';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -187,3 +187,4 @@ export default function AdminProductsPage() {
     </Card>
   );
 }
+

@@ -6,7 +6,7 @@ import { useProductAdminStore } from '@/store/productAdminStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Edit, Trash2, Search, Eye, ShoppingBag } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Search, Eye, Package2 } from 'lucide-react';
 import { formatPrice } from '@/data/products';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -23,6 +23,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useState, useMemo, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminProductsPage() {
   const { products: allProducts, deleteProduct } = useProductAdminStore((state) => ({
@@ -60,16 +61,56 @@ export default function AdminProductsPage() {
 
   if (!mounted) {
     return (
-      <Card className="shadow-lg">
-        <CardHeader>
-          <div className="h-8 bg-muted rounded w-1/2 animate-pulse"></div>
-          <div className="h-4 bg-muted rounded w-3/4 mt-2 animate-pulse"></div>
+      <Card className="shadow-lg w-full">
+        <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <Skeleton className="h-8 w-48 mb-2 rounded" />
+            <Skeleton className="h-4 w-64 rounded" />
+          </div>
+          <Skeleton className="h-10 w-40 rounded-md" />
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="h-10 bg-muted rounded w-1/3 animate-pulse"></div>
-          <div className="h-12 bg-muted rounded w-full animate-pulse"></div>
-          <div className="h-12 bg-muted rounded w-full animate-pulse"></div>
-          <div className="h-12 bg-muted rounded w-full animate-pulse"></div>
+        <CardContent>
+          <div className="mb-6">
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+          <div className="overflow-x-auto border rounded-lg">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[60px] p-2 sm:w-[80px]"><Skeleton className="h-5 w-full rounded" /></TableHead>
+                  <TableHead><Skeleton className="h-5 w-3/4 rounded" /></TableHead>
+                  <TableHead className="hidden md:table-cell"><Skeleton className="h-5 w-1/2 rounded" /></TableHead>
+                  <TableHead className="hidden lg:table-cell"><Skeleton className="h-5 w-1/2 rounded" /></TableHead>
+                  <TableHead className="hidden sm:table-cell"><Skeleton className="h-5 w-1/2 rounded" /></TableHead>
+                  <TableHead className="text-right w-[120px] sm:w-[150px] p-2"><Skeleton className="h-5 w-full rounded" /></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[...Array(3)].map((_, index) => (
+                  <TableRow key={index} className="hover:bg-muted/50">
+                    <TableCell className="p-2">
+                      <Skeleton className="w-[50px] h-[50px] rounded-md" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-3/4 rounded" />
+                      <Skeleton className="h-3 w-1/2 mt-1 rounded md:hidden" />
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-1/2 rounded" /></TableCell>
+                    <TableCell className="hidden lg:table-cell"><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <Skeleton className="h-3 w-full mb-1 rounded" />
+                      <Skeleton className="h-3 w-3/4 rounded" />
+                    </TableCell>
+                    <TableCell className="text-right space-x-1 sm:space-x-2 p-2">
+                      <Skeleton className="h-8 w-8 inline-block rounded" />
+                      <Skeleton className="h-8 w-8 inline-block rounded" />
+                      <Skeleton className="h-8 w-8 inline-block rounded" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     );
@@ -103,7 +144,7 @@ export default function AdminProductsPage() {
         </div>
         {filteredProducts.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground border border-dashed rounded-lg">
-            <ShoppingBag size={48} className="mx-auto mb-4 text-primary/50" />
+            <Package2 size={48} className="mx-auto mb-4 text-primary/50" />
             <p className="text-xl font-semibold">Nenhum produto encontrado.</p>
             {searchTerm && <p className="mt-2">Tente um termo de busca diferente ou limpe a busca.</p>}
             {!searchTerm && <p className="mt-2">Clique em "Adicionar Novo Produto" para começar a cadastrar.</p>}
@@ -131,7 +172,7 @@ export default function AdminProductsPage() {
                           alt={product.name}
                           width={50}
                           height={50}
-                          className="rounded-md object-contain aspect-square" // Changed from object-cover
+                          className="rounded-md object-contain aspect-square"
                           onError={(e) => e.currentTarget.src = `https://picsum.photos/seed/${product.id}/50/50`} 
                         />
                       </div>
@@ -189,4 +230,3 @@ export default function AdminProductsPage() {
     </Card>
   );
 }
-

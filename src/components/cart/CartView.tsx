@@ -10,29 +10,27 @@ import { ShoppingCart, AlertTriangle, Send, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { formatPrice } from '@/data/products';
 import { WHATSAPP_NUMBER, STORE_NAME } from '@/lib/constants';
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useEffect, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CartView() {
-  // Subscribe to store changes for re-renders
   const cartItemsFromStore = useCartStore((state) => state.items);
   const getTotalPrice = useCartStore((state) => state.getTotalPrice);
   const clearCart = useCartStore((state) => state.clearCart);
   
   const productsFromAdminStore = useProductAdminStore((state) => state.products);
-  const { toast } = useToast();
+  const { toast: showToast } = useToast(); // Renamed to avoid conflict with toast function from hook
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Effect to synchronize cart with product availability
   useEffect(() => {
     if (!mounted || !productsFromAdminStore || !cartItemsFromStore) return;
 
     const itemsToRemove: { id: string, name: string }[] = [];
-    // Use the latest cartItems from store directly inside effect if needed or pass cartItemsFromStore
     const currentCartItems = useCartStore.getState().items;
 
     currentCartItems.forEach(cartItem => {
@@ -45,29 +43,25 @@ export default function CartView() {
     if (itemsToRemove.length > 0) {
       const removedProductNames = itemsToRemove.map(item => item.name);
       itemsToRemove.forEach(item => {
-        useCartStore.getState().removeItem(item.id, { suppressToast: true }); // Suppress individual toasts
+        useCartStore.getState().removeItem(item.id, { suppressToast: true });
       });
 
-      toast({
+      showToast({
         title: "Itens Atualizados no Carrinho",
         description: `Os seguintes produtos não estão mais disponíveis e foram removidos: ${removedProductNames.join(', ')}.`,
         variant: "destructive",
         duration: 7000,
       });
     }
-  // productsFromAdminStore and cartItemsFromStore (their reference or a derived value like length/JSON.stringify for deep objects)
-  // are dependencies. `toast` is stable.
-  }, [mounted, productsFromAdminStore, cartItemsFromStore, toast]);
+  }, [mounted, productsFromAdminStore, cartItemsFromStore, showToast]);
 
 
-  // Items to display are now directly from the store, which has been updated by the useEffect.
-  // This ensures UI reflects the synchronized state.
   const itemsForDisplay = cartItemsFromStore; 
-  const currentTotalPrice = getTotalPrice(); // This will be up-to-date.
+  const currentTotalPrice = getTotalPrice();
 
   const handleWhatsAppCheckout = () => {
     if (itemsForDisplay.length === 0) {
-      toast({
+      showToast({
         title: "Carrinho Vazio",
         description: "Adicione produtos ao carrinho antes de finalizar a compra.",
         variant: "destructive",
@@ -93,13 +87,38 @@ export default function CartView() {
     return (
       <Card className="w-full max-w-3xl mx-auto shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-primary flex items-center gap-2">
-            <ShoppingCart size={28} /> Meu Carrinho
-          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-7 w-7 rounded-full" />
+            <Skeleton className="h-7 w-48 rounded" />
+          </div>
         </CardHeader>
-        <CardContent>
-          <p className="text-center text-muted-foreground py-8">Carregando carrinho...</p>
+        <CardContent className="space-y-4">
+          {[...Array(2)].map((_, index) => (
+            <div key={index} className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b rounded-lg">
+              <div className="flex items-center gap-4 w-full sm:w-2/5">
+                <Skeleton className="w-[80px] h-[80px] rounded-md" />
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-32 rounded" />
+                  <Skeleton className="h-4 w-20 rounded" />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-9 w-9 rounded" />
+                <Skeleton className="h-9 w-16 rounded" />
+                <Skeleton className="h-9 w-9 rounded" />
+              </div>
+              <Skeleton className="h-6 w-24 rounded sm:w-auto" />
+              <Skeleton className="h-9 w-9 rounded" />
+            </div>
+          ))}
         </CardContent>
+        <CardFooter className="flex flex-col sm:flex-row justify-between items-center p-6 border-t gap-4">
+          <Skeleton className="h-7 w-32 rounded" />
+          <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
+            <Skeleton className="h-10 w-40 rounded-md" />
+            <Skeleton className="h-10 w-56 rounded-md" />
+          </div>
+        </CardFooter>
       </Card>
     );
   }
@@ -160,4 +179,3 @@ export default function CartView() {
     </Card>
   );
 }
-

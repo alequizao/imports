@@ -1,3 +1,4 @@
+
 "use client";
 import { useParams, useRouter } from 'next/navigation';
 import ProductForm from '@/components/admin/ProductForm';
@@ -5,7 +6,7 @@ import { useProductAdminStore } from '@/store/productAdminStore';
 import { useEffect, useState } from 'react';
 import type { Product } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
@@ -32,27 +33,53 @@ export default function EditProductPage() {
     return (
       <Card className="w-full max-w-2xl mx-auto shadow-xl">
         <CardHeader>
-          <CardTitle>Carregando Produto...</CardTitle>
-          <CardDescription>Aguarde enquanto buscamos os dados do produto.</CardDescription>
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-8 w-48 rounded" />
+            <Skeleton className="h-9 w-36 rounded-md" />
+          </div>
+          <Skeleton className="h-4 w-64 mt-1 rounded" />
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-24 rounded" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </div>
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-16 rounded" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </div>
           </div>
-          <Skeleton className="h-24 w-full" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-20 w-full" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-4 w-28 rounded" />
+            <Skeleton className="h-24 w-full rounded-md" />
           </div>
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-32 rounded" />
+              <Skeleton className="h-32 w-full rounded-lg" />
+            </div>
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-20 rounded" />
+              <Skeleton className="aspect-square w-full max-w-[250px] rounded-md mx-auto md:mx-0" />
+            </div>
           </div>
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-12 w-1/3" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="space-y-1.5">
+                <Skeleton className="h-4 w-20 rounded" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </div>
+            ))}
+          </div>
+          <div className="space-y-1.5">
+            <Skeleton className="h-4 w-20 rounded" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
         </CardContent>
+        <CardFooter>
+          <Skeleton className="h-12 w-40 rounded-md" />
+        </CardFooter>
       </Card>
     );
   }

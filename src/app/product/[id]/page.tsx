@@ -1,17 +1,17 @@
+
 "use client";
 
 import type { Product } from '@/lib/types';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useProductAdminStore } from '@/store/productAdminStore';
 import { useCartStore } from '@/store/cartStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatPrice } from '@/data/products';
-import { ArrowLeft, ShoppingCartIcon, AlertTriangle, Package } from 'lucide-react';
+import { ArrowLeft, ShoppingCartIcon, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
@@ -45,27 +45,43 @@ export default function ProductDetailPage() {
 
   if (!mounted || product === undefined) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="w-full max-w-4xl mx-auto shadow-xl">
-          <CardHeader>
-            <Skeleton className="h-8 w-3/4 mb-2" />
-            <Skeleton className="h-6 w-1/2" />
-          </CardHeader>
-          <CardContent className="grid md:grid-cols-2 gap-8">
-            <Skeleton className="aspect-square w-full rounded-lg" />
-            <div className="space-y-6">
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-10 w-1/3" />
-              <Skeleton className="h-12 w-1/2" />
-              <div className="flex gap-2">
-                <Skeleton className="h-8 w-20" />
-                <Skeleton className="h-8 w-20" />
-              </div>
+      <div className="container mx-auto px-2 sm:px-4 py-8">
+        <Skeleton className="h-10 w-28 mb-6 rounded-md" /> {/* Back button skeleton */}
+        <Card className="w-full max-w-5xl mx-auto shadow-2xl overflow-hidden">
+          <div className="grid md:grid-cols-2">
+            <Skeleton className="aspect-square w-full bg-muted" /> {/* Image skeleton */}
+            <div className="p-6 md:p-8 flex flex-col">
+              <CardHeader className="p-0 mb-4">
+                <Skeleton className="h-10 w-3/4 mb-2 rounded" /> {/* Title skeleton */}
+              </CardHeader>
+              
+              <CardContent className="p-0 flex-grow space-y-4">
+                <Skeleton className="h-8 w-1/3 mb-3 rounded" /> {/* Price skeleton */}
+                <Separator />
+                <div className="space-y-1">
+                   <Skeleton className="h-5 w-24 mb-1 rounded" /> {/* Description label skeleton */}
+                   <Skeleton className="h-4 w-full rounded" />
+                   <Skeleton className="h-4 w-full rounded" />
+                   <Skeleton className="h-4 w-3/4 rounded" />
+                </div>
+
+                <Separator />
+                
+                <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="space-y-1">
+                      <Skeleton className="h-4 w-20 rounded" /> {/* Detail label skeleton */}
+                      <Skeleton className="h-6 w-24 rounded" /> {/* Detail value skeleton / Badge skeleton */}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+              
+              <CardFooter className="p-0 mt-6 pt-6 border-t">
+                <Skeleton className="h-12 w-full rounded-md" /> {/* Add to cart button skeleton */}
+              </CardFooter>
             </div>
-          </CardContent>
-          <CardFooter>
-             <Skeleton className="h-10 w-32" />
-          </CardFooter>
+          </div>
         </Card>
       </div>
     );

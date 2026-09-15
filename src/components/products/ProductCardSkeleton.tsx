@@ -1,7 +1,3 @@
-/*
- * Imports · Desenvolvido por Alequizao <alequizao.dev@gmail.com>
- * https://github.com/alequizao · © 2026 Alequizao. Todos os direitos reservados.
- */
 
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';

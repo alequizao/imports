@@ -1,7 +1,3 @@
-/*
- * Imports · Desenvolvido por Alequizao <alequizao.dev@gmail.com>
- * https://github.com/alequizao · © 2026 Alequizao. Todos os direitos reservados.
- */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import pool from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';

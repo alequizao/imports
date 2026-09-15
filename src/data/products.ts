@@ -1,3 +1,7 @@
+/*
+ * Imports · Desenvolvido por Alequizao <alequizao.dev@gmail.com>
+ * https://github.com/alequizao · © 2026 Alequizao. Todos os direitos reservados.
+ */
 import type { Product } from '@/lib/types';
 
 // These are initial seed products for reference or manual seeding if needed.
